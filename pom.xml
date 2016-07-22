@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.bftcom</groupId>
+    <artifactId>jira-timesheet-export-plugin</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <organization>
+        <name>BFT, LLC, Russian Federation</name>
+        <url>http://www.bftcom.com/</url>
+    </organization>
+
+    <name>jira-timesheet-export-plugin</name>
+    <description>This is the com.bftcom:jira-timesheet-export-plugin plugin for Atlassian JIRA.</description>
+    <!--<packaging>jar</packaging>-->
+    <packaging>atlassian-plugin</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+        <jira.version>7.1.2</jira.version>
+        <amps.version>6.2.4</amps.version>
+        <!-- This key is used to keep the consistency between the key in atlassian-plugin.xml and the key to generate bundle. -->
+        <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
+        <extra.jira.jvmargs>-Datlassian.plugins.enable.wait=500</extra.jira.jvmargs>
+        <jira.jvm.args>-Xms64m -Xmx1024m -XX:MaxPermSize=350m  -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled ${extra.jira.jvmargs}</jira.jvm.args>
+        <jackson.version>2.7.4</jackson.version>
+        <spring.version>4.1.6.RELEASE</spring.version>
+        <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
+        <ao.version>1.1.5</ao.version>
+    </properties>
+
+    <pluginRepositories>
+        <!--<pluginRepository>-->
+            <!--<id>atlassian-public</id>-->
+            <!--<url>https://maven.atlassian.com/content/repositories/atlassian-public/</url>-->
+            <!--<snapshots>-->
+                <!--<enabled>true</enabled>-->
+                <!--<updatePolicy>never</updatePolicy>-->
+                <!--<checksumPolicy>warn</checksumPolicy>-->
+            <!--</snapshots>-->
+            <!--<releases>-->
+                <!--<enabled>true</enabled>-->
+                <!--<checksumPolicy>warn</checksumPolicy>-->
+            <!--</releases>-->
+        <!--</pluginRepository>-->
+        <pluginRepository>
+            <id>repo.gradle</id>
+            <url>http://repo.gradle.org/gradle/repo/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
+
+    <repositories>
+        <!--<repository>-->
+            <!--<id>atlassian-public2</id>-->
+            <!--<url>https://maven.atlassian.com/repository/public</url>-->
+            <!--<snapshots>-->
+                <!--<enabled>true</enabled>-->
+                <!--<updatePolicy>never</updatePolicy>-->
+                <!--<checksumPolicy>warn</checksumPolicy>-->
+            <!--</snapshots>-->
+            <!--<releases>-->
+                <!--<enabled>true</enabled>-->
+                <!--<checksumPolicy>warn</checksumPolicy>-->
+            <!--</releases>-->
+        <!--</repository>-->
+        <repository>
+            <id>atlassian-public</id>
+            <url>https://maven.atlassian.com/content/repositories/atlassian-public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>atlassian-public-group</id>
+            <url>https://maven.atlassian.com/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>atlassian-3rdparty</id>
+            <url>https://maven.atlassian.com/3rdparty/</url>
+        </repository>
+
+
+        <!--<repository>-->
+            <!--<id>gliffy-public</id>-->
+            <!--<url>http://maven.gliffy.com/content/groups/public/</url>-->
+        <!--</repository>-->
+        <!--<repository>-->
+            <!--<id>maven-us.nuxeo-public</id>-->
+            <!--<url>https://maven-us.nuxeo.org/nexus/content/repositories/public/</url>-->
+        <!--</repository>-->
+        <!--<repository>-->
+            <!--<id>gradle.artifactoryonline-libs</id>-->
+            <!--<url>http://gradle.artifactoryonline.com/gradle/libs/</url>-->
+        <!--</repository>-->
+        <!--<repository>-->
+            <!--<id>repo.gradle</id>-->
+            <!--<url>http://repo.gradle.org/gradle/repo/</url>-->
+        <!--</repository>-->
+        <!--<repository>-->
+            <!--<id>repo.4sh.fr</id>-->
+            <!--<url>http://repo.4sh.fr/artifactory/pubs/</url>-->
+        <!--</repository>-->
+    </repositories>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
+            <version>${jira.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Add dependency on jira-core if you want access to JIRA implementation classes as well as the sanctioned API. -->
+        <!-- This is not normally recommended, but may be required eg when migrating a plugin originally developed against JIRA 4.x -->
+
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-core</artifactId>
+            <version>${jira.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-annotation</artifactId>
+            <version>${atlassian.spring.scanner.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-runtime</artifactId>
+            <version>${atlassian.spring.scanner.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>net.java.dev.activeobjects</groupId>-->
+            <!--<artifactId>activeobjects-core</artifactId>-->
+            <!--<version></version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>com.atlassian.activeobjects</groupId>
+            <artifactId>activeobjects-plugin</artifactId>
+            <version>0.23.7</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>com.atlassian.activeobjects</groupId>-->
+            <!--<artifactId>activeobjects-spi</artifactId>-->
+            <!--<version>${ao.version}</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>com.atlassian.sal</groupId>-->
+            <!--<artifactId>sal-api</artifactId>-->
+            <!--<version>2.4.1</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>jta</groupId>-->
+            <!--<artifactId>jta</artifactId>-->
+            <!--<version>1.0.1</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>jndi</groupId>-->
+            <!--<artifactId>jndi</artifactId>-->
+            <!--<version>1.2.1</version>-->
+        <!--</dependency>-->
+		<!-- Uncomment to use TestKit in your project. Details at https://bitbucket.org/atlassian/jira-testkit -->
+		<!-- You can read more about TestKit at https://developer.atlassian.com/display/JIRADEV/Plugin+Tutorial+-+Smarter+integration+testing+with+TestKit -->
+		<!--
+		<dependency>
+			<groupId>com.atlassian.jira.tests</groupId>
+			<artifactId>jira-testkit-client</artifactId>
+			<version>${testkit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		-->
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>maven-jira-plugin</artifactId>
+                <version>${amps.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <productVersion>${jira.version}</productVersion>
+                    <productDataVersion>${jira.version}</productDataVersion>
+                    <skipITs>true</skipITs>
+                    <skipTests>true</skipTests>
+                    <skipITVerification>true</skipITVerification>
+                    <skipUTs>true</skipUTs>
+                    <allowGoogleTracking>false</allowGoogleTracking>
+                    <enableQuickReload>true</enableQuickReload>
+                    <jvmDebugSuspend>false</jvmDebugSuspend>
+                    <skipManifestValidation>true</skipManifestValidation>
+                    <installPlugin>true</installPlugin>
+                    <parallel>true</parallel>
+                    <enableFastdev>false</enableFastdev>
+                    <!--для локальной отладки-->
+                    <products>
+                        <product>
+                            <id>jira</id>
+                            <instanceId>jira</instanceId>
+                            <version>${jira.version}</version>
+                            <httpPort>2990</httpPort>
+                            <contextPath>/jira</contextPath>
+                            <jvmDebugPort>5005</jvmDebugPort>
+                            <jvmArgs>${jira.jvm.args}</jvmArgs>
+                            <applications>
+                                <application>
+                                    <applicationKey>jira-software</applicationKey>
+                                    <version>${jira.version}</version>
+                                </application>
+                            </applications>
+                        </product>
+                    </products>
+					<!-- Uncomment to install TestKit backdoor in JIRA. -->
+					<!--
+					<pluginArtifacts>
+						<pluginArtifact>
+							<groupId>com.atlassian.jira.tests</groupId>
+							<artifactId>jira-testkit-plugin</artifactId>
+							<version>${testkit.version}</version>
+						</pluginArtifact>
+					</pluginArtifacts>
+					-->
+                    <enableQuickReload>true</enableQuickReload>
+                    <enableFastdev>false</enableFastdev>
+
+                    <!-- See here for an explanation of default instructions: -->
+                    <!-- https://developer.atlassian.com/docs/advanced-topics/configuration-of-instructions-in-atlassian-plugins -->
+                    <instructions>
+                        <Atlassian-Plugin-Key>${atlassian.plugin.key}</Atlassian-Plugin-Key>
+
+                        <!-- Add package to export here -->
+                        <Export-Package>
+                            com.bftcom.timesheet.export.api,
+                        </Export-Package>
+
+                        <!-- Add package import here -->
+                        <Import-Package>
+                            org.springframework.osgi.*;resolution:="optional",
+                            org.eclipse.gemini.blueprint.*;resolution:="optional",
+                            *
+                        </Import-Package>
+
+                        <!-- Ensure plugin is spring powered -->
+                        <Spring-Context>*</Spring-Context>
+                    </instructions>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.atlassian.plugin</groupId>
+                <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
+                <version>1.2.6</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>atlassian-spring-scanner</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scannedDependencies>
+                        <dependency>
+                            <groupId>com.atlassian.plugin</groupId>
+                            <artifactId>atlassian-spring-scanner-external-jar</artifactId>
+                        </dependency>
+                    </scannedDependencies>
+                    <verbose>false</verbose>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+
+</project>
