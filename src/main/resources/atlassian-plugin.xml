@@ -21,9 +21,10 @@
         <context>jira-timesheet-export-plugin</context>
     </web-resource>
 
-    <component-import key="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" />
-    <ao key="ao-entities">
-        <entity>com.bftcom.timesheet.export.entity.WorklogAdditionalInfo</entity>
+    <component-import key="ao" public="true" interface="com.atlassian.activeobjects.external.ActiveObjects"/>
+    <ao public="true" key="ao-entities">
+        <entity>com.bftcom.timesheet.export.entity.WorklogData</entity>
     </ao>
+
     
 </atlassian-plugin>

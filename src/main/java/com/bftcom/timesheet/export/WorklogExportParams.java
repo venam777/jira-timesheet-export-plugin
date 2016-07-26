@@ -17,14 +17,28 @@ public class WorklogExportParams {
     private Collection<Project> projects;
     private Date startDate;
     private Date endDate;
+    //todo
+    //бюджеты
+    //пользователи
+    //задачи
+    //ид-шники worklog
 
-    public WorklogExportParams(Date startDate, Date endDate, Collection<Project> projects) {
-        this.projects = projects;
+    public WorklogExportParams(Date startDate, Date endDate) {
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
-    public WorklogExportParams(Date startDate, Date endDate, String... projectKeys) {
+    public WorklogExportParams projects(Collection<String> projectKeys) {
+        this.projects = transformProjects((String[]) projectKeys.toArray());
+        return this;
+    }
+
+    public WorklogExportParams projects(String... projectKeys) {
+        this.projects = transformProjects(projectKeys);
+        return this;
+    }
+
+    protected Collection<Project> transformProjects(String... projectKeys) {
         ProjectManager projectManager = ComponentAccessor.getProjectManager();
         List<Project> projectList = new ArrayList<>();
         for (String key : projectKeys) {
@@ -33,9 +47,7 @@ public class WorklogExportParams {
                 projectList.add(project);
             }
         }
-        this.projects = projectList;
-        this.startDate = startDate;
-        this.endDate = endDate;
+        return projectList;
     }
 
     public Collection<Project> getProjects() {
