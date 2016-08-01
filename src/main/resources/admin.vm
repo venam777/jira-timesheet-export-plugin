@@ -1,0 +1,96 @@
+#requireResource("com.bftcom:jira-timesheet-export-plugin:jira-timesheet-export-plugin.css")
+#requireResource("com.bftcom:jira-timesheet-export-plugin:jira-timesheet-export-plugin.js")
+<html>
+<head>
+    <title>XProduct Admin</title>
+    <meta name="decorator" content="atl.admin">
+    <link href="css/jira-timesheet-export-plugin.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+##todo перенести это все в css и js файлы, но они почему-то пустые при подключении
+##===============resources=================
+<style>
+    #timesheet-export-props td:first-of-type {
+        font-weight: bold;
+        width: 40%;
+    }
+
+    #timesheet-export-props td input:not([type="radio"]), #timesheet-export-props td select {
+        width: 100%;
+    }
+</style>
+<script>
+    function setExportMode(isAutoMode) {
+        document.getElementById("exportPeriod").disabled = isAutoMode
+        document.getElementById("importPeriod").disabled = isAutoMode
+        document.getElementById("startDate").disabled = isAutoMode
+        document.getElementById("endDate").disabled = isAutoMode
+        document.getElementById("saveButton").value = isAutoMode ? "Сохранить" : "Выполнить"
+    }
+    window.onload = function(){
+        setExportMode(true)
+    }
+</script>
+##===============resources=================
+<form id="admin" method="post">
+
+    <header class="aui-page-header">
+        <div class="aui-page-header-inner">
+            <div class="aui-page-header-main">
+                <h2>Настройки плагина</h2>
+            </div>
+            <div class="aui-page-header-actions">
+                <input type="submit" id="saveButton" name="saveButton" value="Сохранить">
+            </div>
+        </div>
+    </header>
+
+##    таблица
+    <table class="aui" id="timesheet-export-props">
+        <tr>
+            <td>Режим работы:</td>
+            <td>
+                <input type="radio" id="autoExportMode" name="exportType" value="auto" checked onchange="setExportMode(true)">Автоматически
+                <input type="radio" id="manualExportMode" name="exportType" value="manual" onchange="setExportMode(false)">Вручную
+            </td>
+        </tr>
+        <tr>
+            <td>Директория экспорта:</td>
+            <td><input type="text" id="exportDir" name="exportDir" value=$exportDir></td>
+        </tr>
+        <tr>
+            <td>Директория импорта:</td>
+            <td><input type="text" id="importDir" name="importDir" value=$importDir></td>
+        </tr>
+        <tr>
+            <td>Периодичность экспорта, в часах:</td>
+            <td><input type="number" id="exportPeriod" name="exportPeriod" value=$exportPeriod step="0.1"></td>
+        </tr>
+        <tr>
+            <td>Периодичность импорта, в часах:</td>
+            <td><input type="number" id="importPeriod" name="importPeriod" value=$importPeriod step="0.1"></td>
+        </tr>
+        <tr>
+            <td>Начальная дата:</td>
+            <td><input type="date" id="startDate" name="startDate" value=$startDate></td>
+        </tr>
+        <tr>
+            <td>Конечная дата:</td>
+            <td><input type="date" id="endDate" name="endDate" value=$endDate></td>
+        </tr>
+        <tr>
+            <td>Проекты:</td>
+            <td>
+                <select name="projects" multiple>
+                    #foreach($project in $projects)
+                        <option value=$project>$project</option>
+                    #end
+                </select>
+            </td>
+        </tr>
+    </table>
+##    таблица
+
+</form>
+</body>
+</html>

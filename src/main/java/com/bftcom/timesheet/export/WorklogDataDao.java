@@ -2,7 +2,9 @@ package com.bftcom.timesheet.export;
 
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.worklog.Worklog;
+import com.atlassian.jira.issue.worklog.WorklogManager;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.bftcom.timesheet.export.entity.WorklogData;
 import net.java.ao.Query;
@@ -31,7 +33,8 @@ public class WorklogDataDao {
     }
 
     public boolean isWorklogExportable(Worklog worklog) {
-        return getWorklogStatus(worklog.getId()).equals(WorklogData.NOT_VIEWED_STATUS);
+        String worklogStatus = getWorklogStatus(worklog.getId());
+        return worklogStatus.equals("") || worklogStatus.equals(WorklogData.NOT_VIEWED_STATUS) ;
     }
 
     public String getWorklogStatus(Long worklogId) {
@@ -55,6 +58,20 @@ public class WorklogDataDao {
         });
     }
 
+    public void delete(Long worklogId) {
+        activeObjects.deleteWithSQL(WorklogData.class, " WORKLOG_ID = ?", worklogId);
+    }
+
+    public void update(Long worklogId, String status, String rejectComment) {
+        activeObjects.executeInTransaction(() -> {
+            WorklogData data = get(worklogId);
+            data.setStatus(status);
+            data.setRejectComment(rejectComment);
+            data.save();
+            return data;
+        });
+    }
+
     protected WorklogData get(Long worklogId) {
         WorklogData[] mass = activeObjects.find(WorklogData.class, Query.select().where("WORKLOG_ID = ?", worklogId));
         if (mass != null && mass.length == 1) {
@@ -62,9 +79,4 @@ public class WorklogDataDao {
         }
         return null;
     }
-
-    public void deleteWorklogData(Long worklogId) {
-        activeObjects.deleteWithSQL(WorklogData.class, " WORKLOG_ID = ?", worklogId);
-    }
-
 }

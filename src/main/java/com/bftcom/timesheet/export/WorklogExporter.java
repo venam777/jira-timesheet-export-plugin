@@ -1,6 +1,5 @@
 package com.bftcom.timesheet.export;
 
-import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.bc.issue.worklog.DeletedWorklog;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.fields.CustomField;
@@ -8,6 +7,7 @@ import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.issue.worklog.WorklogManager;
 import com.atlassian.jira.project.Project;
 import com.bftcom.timesheet.export.entity.WorklogData;
+import com.bftcom.timesheet.export.utils.Settings;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -30,10 +30,10 @@ public class WorklogExporter {
     private WorklogManager manager;
     private WorklogDataDao dao;
 
-    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private Long financeProjectFieldId = 12500L;
+    private static WorklogExporter instance;
 
-    public WorklogExporter(WorklogDataDao dao) {
+    private WorklogExporter(WorklogDataDao dao) {
         this.dao = dao;
         manager = ComponentAccessor.getWorklogManager();
     }
@@ -63,9 +63,9 @@ public class WorklogExporter {
             addAttribute(doc, timesheet, "ID", worklog.getId().toString());
             addAttribute(doc, timesheet, "ISSUE_ID", worklog.getIssue().getId().toString());
             Double spentTimeHours = (double) worklog.getTimeSpent() / 60 / 60;
-            addAttribute(doc, timesheet, "AMOUNT", String.valueOf(Math.round(spentTimeHours * 100) / 100));
+            addAttribute(doc, timesheet, "AMOUNT", String.valueOf((double) Math.round(spentTimeHours * 100) / 100));
             addAttribute(doc, timesheet, "REMARK", worklog.getComment());
-            addAttribute(doc, timesheet, "WORKDATE", dateFormat.format(worklog.getStartDate()));
+            addAttribute(doc, timesheet, "WORKDATE", Settings.dateFormat.format(worklog.getStartDate()));
             addAttribute(doc, timesheet, "PROJECTID", worklog.getIssue().getProjectObject().getId().toString());
 
             CustomField f = ComponentAccessor.getCustomFieldManager().getCustomFieldObject(financeProjectFieldId);
@@ -97,8 +97,10 @@ public class WorklogExporter {
         // write the content into xml file
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
+        //formatting
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
         DOMSource source = new DOMSource(doc);
         StreamResult result = new StreamResult(new File(fileNameWithPath));
 
@@ -108,18 +110,18 @@ public class WorklogExporter {
     }
 
     private Collection<Worklog> getUpdatedWorklogs(WorklogExportParams exportParams) {
-        Long dateFrom = new Date().getTime();
+        Date dateFrom = new Date();
         if (exportParams.getStartDate() != null) {
-            dateFrom = exportParams.getStartDate().getTime();
+            dateFrom = exportParams.getStartDate();
         }
-        List<Worklog> worklogList = manager.getWorklogsUpdatedSince(dateFrom);
+        List<Worklog> worklogList = manager.getWorklogsUpdatedSince(dateFrom.getTime());
         //статусы
-        worklogList.removeIf(w -> dao.isWorklogExportable(w));
+        worklogList.removeIf(w -> !dao.isWorklogExportable(w));
         //проекты
         if (exportParams.getProjects() != null && exportParams.getProjects().size() > 0) {
             worklogList.removeIf(w -> {
                 for (Project p : exportParams.getProjects()) {
-                    if (w.getIssue().getProjectObject().getKey().equals(p.getKey())) {
+                    if (w.getIssue().getProjectId().equals(p.getId())) {
                         return false;
                     }
                 }
@@ -154,5 +156,15 @@ public class WorklogExporter {
         element.setAttributeNode(attr);
     }
 
+    public static void createInstance(WorklogDataDao dao) {
+        instance = new WorklogExporter(dao);
+    }
+
+    public static WorklogExporter getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("Instance must be created by method createInstance(dao) before using!");
+        }
+        return instance;
+    }
 
 }

@@ -4,10 +4,7 @@ import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Параметры, по которым выбираются таймшиты из джиры
@@ -29,7 +26,11 @@ public class WorklogExportParams {
     }
 
     public WorklogExportParams projects(Collection<String> projectKeys) {
-        this.projects = transformProjects((String[]) projectKeys.toArray());
+        if (projectKeys == null) {
+            this.projects = Collections.emptyList();
+        } else {
+            this.projects = transformProjects((String[]) projectKeys.toArray());
+        }
         return this;
     }
 
@@ -60,5 +61,31 @@ public class WorklogExportParams {
 
     public Date getEndDate() {
         return endDate;
+    }
+
+    public static Date getStartOfCurrentMonth() {
+        Calendar start = Calendar.getInstance();
+        start.setTime(new Date());
+        start.set(Calendar.DAY_OF_MONTH, 1);
+        start.set(Calendar.HOUR, 0);
+        start.set(Calendar.MINUTE, 0);
+        start.set(Calendar.SECOND, 0);
+        return start.getTime();
+    }
+
+    public static Date getEndOfCurrentMonth() {
+        Calendar end = Calendar.getInstance();
+        end.setTime(new Date());
+        end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH));
+        end.set(Calendar.HOUR_OF_DAY, 23);
+        end.set(Calendar.MINUTE, 59);
+        end.set(Calendar.SECOND, 59);
+        return end.getTime();
+    }
+
+    public static WorklogExportParams getDefaultParams() {
+        WorklogExportParams result = new WorklogExportParams(getStartOfCurrentMonth(), getEndOfCurrentMonth());
+        return result;
+
     }
 }
