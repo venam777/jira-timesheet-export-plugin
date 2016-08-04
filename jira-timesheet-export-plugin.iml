@@ -65,7 +65,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.atlassian.sal:sal-api:3.0.3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.atlassian.gadgets:atlassian-gadgets-api:4.1.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.atlassian.johnson:atlassian-johnson-core:3.0.0" level="project" />
-    <orderEntry type="library" name="Maven: joda-time:joda-time:2.8.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: joda-time:joda-time:2.8.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: commons-lang:commons-lang:2.6" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.commons:commons-lang3:3.3.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: commons-io:commons-io:2.1" level="project" />
@@ -303,7 +303,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-context-support:2.5.6" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.springframework:spring-web:2.5.6" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.atlassian.templaterenderer:atlassian-template-renderer-api:1.1.1" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.scheduler:atlassian-scheduler-core:1.7.0" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.scheduler:atlassian-scheduler-api:1.7.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.atlassian.scheduler:atlassian-scheduler-core:1.7.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.atlassian.scheduler:atlassian-scheduler-api:1.7.0" level="project" />
   </component>
 </module>

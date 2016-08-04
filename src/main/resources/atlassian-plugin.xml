@@ -2,41 +2,35 @@
     <plugin-info>
         <description>${project.description}</description>
         <version>${project.version}</version>
-        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+        <vendor name="${project.organization.name}" url="${project.organization.url}"/>
         <param name="plugin-icon">images/pluginIcon.png</param>
         <param name="plugin-logo">images/pluginLogo.png</param>
-        <!--/timesheet-export/admin-->
-        <!--<param name="configure.url">/admin/plugins/timesheet-export/configurePlugin.action</param>-->
         <param name="configure.url">/plugins/servlet/timesheet-export/config</param>
     </plugin-info>
 
     <!-- add our i18n resource -->
     <resource type="i18n" name="i18n" location="jira-timesheet-export-plugin"/>
-    
+
     <!-- add our web resources -->
     <web-resource key="jira-timesheet-export-plugin-resources" name="jira-timesheet-export-plugin Web Resources">
         <dependency>com.atlassian.auiplugin:ajs</dependency>
-        
-        <resource type="download" key="jira-timesheet-export-plugin.css" name="jira-timesheet-export-plugin.css" location="/css/jira-timesheet-export-plugin.css"/>
-        <resource type="download" key="jira-timesheet-export-plugin.js" name="jira-timesheet-export-plugin.js" location="/js/jira-timesheet-export-plugin.js"/>
+
+        <resource type="download" key="jira-timesheet-export-plugin.css" name="jira-timesheet-export-plugin.css"
+                  location="/css/jira-timesheet-export-plugin.css"/>
+        <resource type="download" key="jira-timesheet-export-plugin.js" name="jira-timesheet-export-plugin.js"
+                  location="/js/jira-timesheet-export-plugin.js"/>
         <resource type="download" name="images/" location="/images"/>
 
         <context>jira-timesheet-export-plugin</context>
     </web-resource>
 
-    <component-import key="ao" public="true" interface="com.atlassian.activeobjects.external.ActiveObjects"/>
-    <ao public="true" key="ao-entities">
+    <component-import key="ao" interface="com.atlassian.activeobjects.external.ActiveObjects"/>
+    <ao key="ao-entities">
         <entity>com.bftcom.timesheet.export.entity.WorklogData</entity>
     </ao>
-
-    <!--admin servlet configuration-->
-    <!--<component-import key="userManager" interface="com.atlassian.sal.api.user.UserManager"/>-->
-    <!--<component-import key="loginUriProvider" interface="com.atlassian.sal.api.auth.LoginUriProvider"/>-->
-    <!--<component-import key="renderer" interface="com.atlassian.templaterenderer.TemplateRenderer"/>-->
-    <!--<component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>-->
 
     <servlet key="timesheet-export-admin-servlet" class="com.bftcom.timesheet.export.AdminServlet">
         <url-pattern>/timesheet-export/config</url-pattern>
     </servlet>
-    
+
 </atlassian-plugin>

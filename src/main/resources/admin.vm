@@ -21,8 +21,8 @@
 </style>
 <script>
     function setExportMode(isAutoMode) {
-        document.getElementById("exportPeriod").disabled = isAutoMode
-        document.getElementById("importPeriod").disabled = isAutoMode
+//        document.getElementById("exportPeriod").disabled = !isAutoMode
+//        document.getElementById("importPeriod").disabled = !isAutoMode
         document.getElementById("startDate").disabled = isAutoMode
         document.getElementById("endDate").disabled = isAutoMode
         document.getElementById("saveButton").value = isAutoMode ? "Сохранить" : "Выполнить"
@@ -62,14 +62,14 @@
             <td>Директория импорта:</td>
             <td><input type="text" id="importDir" name="importDir" value=$importDir></td>
         </tr>
-        <tr>
-            <td>Периодичность экспорта, в часах:</td>
-            <td><input type="number" id="exportPeriod" name="exportPeriod" value=$exportPeriod step="0.1"></td>
-        </tr>
-        <tr>
-            <td>Периодичность импорта, в часах:</td>
-            <td><input type="number" id="importPeriod" name="importPeriod" value=$importPeriod step="0.1"></td>
-        </tr>
+##        <tr>
+##            <td>Периодичность экспорта, в часах:</td>
+##            <td><input type="number" id="exportPeriod" name="exportPeriod" value=$exportPeriod step="0.1"></td>
+##        </tr>
+##        <tr>
+##            <td>Периодичность импорта, в часах:</td>
+##            <td><input type="number" id="importPeriod" name="importPeriod" value=$importPeriod step="0.1"></td>
+##        </tr>
         <tr>
             <td>Начальная дата:</td>
             <td><input type="date" id="startDate" name="startDate" value=$startDate></td>

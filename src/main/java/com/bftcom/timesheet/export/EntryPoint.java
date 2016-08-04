@@ -3,24 +3,32 @@ package com.bftcom.timesheet.export;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.event.api.*;
 import com.atlassian.event.api.EventListener;
+import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.type.EventType;
+import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
+import com.atlassian.plugin.event.events.PluginInstalledEvent;
+import com.atlassian.plugin.event.events.PluginModuleEnabledEvent;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.scheduler.SchedulerHistoryService;
+import com.atlassian.scheduler.SchedulerService;
+import com.atlassian.scheduler.SchedulerServiceException;
+import com.atlassian.scheduler.config.*;
+import com.atlassian.scheduler.status.RunDetails;
+import com.bftcom.timesheet.export.scheduler.ExportPluginJob;
+import com.bftcom.timesheet.export.scheduler.ImportJobRunner;
+import com.bftcom.timesheet.export.utils.Callback;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
+import com.google.common.collect.ImmutableMap;
 import org.springframework.stereotype.Component;
-import org.xml.sax.SAXException;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -30,17 +38,20 @@ public class EntryPoint {
     protected EventPublisher eventPublisher;
     protected WorklogEventListener worklogEventListener;
     protected PluginSettingsFactory pluginSettingsFactory;
+    protected SchedulerService schedulerService;
+    protected SchedulerHistoryService historyService;
 
-    @Inject
-    public EntryPoint(@ComponentImport EventPublisher eventPublisher, @ComponentImport ActiveObjects activeObjects,
-                      @ComponentImport PluginSettingsFactory pluginSettingsFactory) {
-        this.eventPublisher = eventPublisher;
-        WorklogDataDao dao = new WorklogDataDao(activeObjects);
+    protected final int startDelayInMinutes = 2;
+
+    public EntryPoint() {
+        this.eventPublisher = ComponentAccessor.getOSGiComponentInstanceOfType(EventPublisher.class);
+        WorklogDataDao dao = new WorklogDataDao(ComponentAccessor.getOSGiComponentInstanceOfType(ActiveObjects.class));
         WorklogExporter.createInstance(dao);
         WorklogImporter.createInstance(dao);
-        this.pluginSettingsFactory = pluginSettingsFactory;
+        this.pluginSettingsFactory = ComponentAccessor.getOSGiComponentInstanceOfType(PluginSettingsFactory.class);
+        this.schedulerService = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerService.class);
+        this.historyService = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class);
         worklogEventListener = new WorklogEventListener(dao);
-        saveDefaultPluginSettings();
     }
 
     @PostConstruct
@@ -54,15 +65,51 @@ public class EntryPoint {
     }
 
     @EventListener
+    public void pluginInstalled(PluginInstalledEvent event) {
+        if (checkPluginByName(event.getPlugin().getName())) {
+            saveDefaultPluginSettings();
+        }
+    }
+
+    @EventListener
     public void onPluginEnabled(PluginEnabledEvent event) {
-        if (event.getPlugin().getName().equals("jira-timesheet-export-plugin")) {
-            main();
+        if (checkPluginByName(event.getPlugin().getName())) {
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    schedulerService.registerJobRunner(JobRunnerKey.of(Settings.exportJobKey), new ExportPluginJob(new Callback<WorklogExportParams>() {
+                        @Override
+                        public WorklogExportParams call() {
+                            RunDetails details = historyService.getLastSuccessfulRunForJob(JobId.of(Settings.exportJobId));
+                            if (details == null) {
+                                return new WorklogExportParams(WorklogExportParams.getStartOfCurrentMonth(), WorklogExportParams.getEndOfCurrentMonth());
+                            }
+                            return new WorklogExportParams(details.getStartTime(), WorklogExportParams.getEndOfCurrentMonth());
+                        }
+                    }));
+                    schedulerService.registerJobRunner(JobRunnerKey.of(Settings.importJobKey), new ImportJobRunner());
+                    PluginSettings pluginSettings = pluginSettingsFactory.createSettingsForKey(Settings.pluginKey);
+                    try {
+                        startJob(Parser.parseFloat(pluginSettings.get("exportPeriod"), Settings.exportPeriod), Settings.exportJobKey, Settings.exportJobId);
+                        startJob(Parser.parseFloat(pluginSettings.get("importPeriod"), Settings.importPeriod), Settings.importJobKey, Settings.importJobId);
+                    } catch (SchedulerServiceException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, startDelayInMinutes * 60 * 1000);
+        }
+    }
+
+    @EventListener
+    public void onPluginDisabled(PluginDisabledEvent event) {
+        if (checkPluginByName(event.getPlugin().getName())) {
+            schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.exportJobKey));
+            schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.importJobKey));
         }
     }
 
     private void saveDefaultPluginSettings() {
         PluginSettings settings = pluginSettingsFactory.createSettingsForKey(Settings.pluginKey);
-
 //        settings.put("startDate", Settings.dateFormat.format(WorklogExportParams.getStartOfCurrentMonth()));
 //        settings.put("endDate", Settings.dateFormat.format(WorklogExportParams.getEndOfCurrentMonth()));
         settings.put("exportPeriod", Settings.exportPeriod.toString());
@@ -72,42 +119,16 @@ public class EntryPoint {
         settings.put("projects", "[]");
     }
 
-    public void main() {
-        PluginSettings pluginSettings = pluginSettingsFactory.createSettingsForKey(Settings.pluginKey);
-        Date startDate = Parser.parseDate(pluginSettings.get("startDate"), new Date());
-        Date endDate = Parser.parseDate(pluginSettings.get("endDate"), new Date());
-        Collection<String> projectKeys = (Collection<String>) pluginSettings.get("projectKeys");
-        //todo параметры
-        /*Calendar calendarFrom = Calendar.getInstance();
-        calendarFrom.set(Calendar.YEAR, 2016);
-        calendarFrom.set(Calendar.MONTH, 6);
-        calendarFrom.set(Calendar.DAY_OF_MONTH, 26);
-        calendarFrom.set(Calendar.HOUR, 0);
-        calendarFrom.set(Calendar.MINUTE, 0);
-        calendarFrom.set(Calendar.SECOND, 0);
+    private void startJob(Float periodInHours, String jobRunnerKey, String jobId) throws SchedulerServiceException {
+        JobConfig config = JobConfig.forJobRunnerKey(JobRunnerKey.of(jobRunnerKey))
+                .withSchedule(Schedule.forInterval((long) (periodInHours * 60 * 60 * 1000), new Date()))
+                .withParameters(ImmutableMap.of())
+                .withRunMode(RunMode.RUN_LOCALLY);
+        schedulerService.scheduleJob(JobId.of(jobId), config);
+    }
 
-        Calendar calendarTo = Calendar.getInstance();
-        calendarTo.set(Calendar.YEAR, 2016);
-        calendarTo.set(Calendar.MONTH, 6);
-        calendarTo.set(Calendar.DAY_OF_MONTH, 31);
-        calendarTo.set(Calendar.HOUR, 0);
-        calendarTo.set(Calendar.MINUTE, 0);
-        calendarTo.set(Calendar.SECOND, 0);*/
-
-        try {
-            WorklogExportParams exportParams = new WorklogExportParams(startDate, endDate).projects(projectKeys);
-            //todo ошибка в названии файла
-            WorklogExporter.getInstance().exportWorklog(exportParams, Settings.getExportFileName());
-            WorklogImporter.getInstance().importWorklog(Settings.importDir);
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private boolean checkPluginByName(String pluginName) {
+        return pluginName.equals("jira-timesheet-export-plugin");
     }
 
     @EventListener
@@ -116,7 +137,7 @@ public class EntryPoint {
             worklogEventListener.onWorklogCreated(event.getWorklog());
         } else if (event.getEventTypeId().equals(EventType.ISSUE_WORKLOG_DELETED_ID)) {
             worklogEventListener.onWorklogDeleted(event.getWorklog().getId());
-        } else if (event.getEventTypeId().equals(EventType.ISSUE_WORKLOG_UPDATED_ID)){
+        } else if (event.getEventTypeId().equals(EventType.ISSUE_WORKLOG_UPDATED_ID)) {
             worklogEventListener.onWorklogUpdated(event.getWorklog());
         }
     }

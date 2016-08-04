@@ -12,13 +12,13 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-@Component
+//@Component
 public class WorklogDataDao {
 
-    @ComponentImport
+//    @ComponentImport
     protected ActiveObjects activeObjects;
 
-    @Inject
+//    @Inject
     public WorklogDataDao(ActiveObjects activeObjects) {
         this.activeObjects = activeObjects;
     }

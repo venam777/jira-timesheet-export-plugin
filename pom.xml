@@ -194,13 +194,20 @@
             <groupId>com.atlassian.scheduler</groupId>
             <artifactId>atlassian-scheduler-core</artifactId>
             <version>1.7.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.scheduler</groupId>
             <artifactId>atlassian-scheduler-api</artifactId>
             <version>1.7.0</version>
+            <scope>provided</scope>
         </dependency>
-
+        <!--<dependency>-->
+            <!--<groupId>org.joda</groupId>-->
+            <!--<artifactId>joda-convert</artifactId>-->
+            <!--<version>1.8.1</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
         <!--<dependency>-->
             <!--<groupId>com.atlassian.activeobjects</groupId>-->
             <!--<artifactId>activeobjects-spi</artifactId>-->
@@ -211,7 +218,21 @@
         <!--<dependency>-->
             <!--<groupId>com.atlassian.sal</groupId>-->
             <!--<artifactId>sal-api</artifactId>-->
-            <!--<version>2.4.1</version>-->
+            <!--<version>3.0.3</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>com.atlassian.sal</groupId>-->
+            <!--<artifactId>sal-spi</artifactId>-->
+            <!--<version>3.0.3</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>com.atlassian.jira</groupId>-->
+            <!--<artifactId>atlassian-jira</artifactId>-->
+            <!--<version></version>-->
             <!--<scope>provided</scope>-->
         <!--</dependency>-->
 
@@ -296,16 +317,17 @@
 
                         <!-- Add package to export here -->
                         <Export-Package>
-                            com.bftcom.timesheet.export.api,
+                            com.bftcom.timesheet.export,
                         </Export-Package>
 
                         <!-- Add package import here -->
                         <Import-Package>
                             org.springframework.osgi.*;resolution:="optional",
                             org.eclipse.gemini.blueprint.*;resolution:="optional",
+                            <!--com.atlassian.scheduler.*;resolution:="optional",-->
                             *
                         </Import-Package>
-
+                        <!--<Embed-Dependency>*;scope=provided;inline=false;artifactId=atlassian-scheduler-api</Embed-Dependency>-->
                         <!-- Ensure plugin is spring powered -->
                         <Spring-Context>*</Spring-Context>
                     </instructions>

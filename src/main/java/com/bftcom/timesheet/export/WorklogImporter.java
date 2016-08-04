@@ -1,9 +1,11 @@
 package com.bftcom.timesheet.export;
 
+import com.bftcom.timesheet.export.utils.Settings;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -16,6 +18,8 @@ public class WorklogImporter {
 
     private WorklogDataDao dao;
     private static WorklogImporter instance;
+    //private String encoding = "windows-1251";
+    private String encoding = "UTF-8";
 
     private WorklogImporter(WorklogDataDao dao) {
         this.dao = dao;
@@ -24,12 +28,14 @@ public class WorklogImporter {
     public void importWorklog(String dirName) throws ParserConfigurationException, IOException, SAXException {
         File dir = new File(dirName);
         if (!dir.exists() || !dir.isDirectory()) return;
-        for (String fileName : dir.list((dir1, name) -> name.endsWith(".xml"))) {
+        for (String fileName : dir.list((dir1, name) -> name.startsWith("msg") && name.endsWith(".xml"))) {
             File fXmlFile = new File(dirName +  fileName);
             if (!fXmlFile.exists()) {continue;}
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(fXmlFile);
+            InputSource source = new InputSource(fXmlFile.toURI().toString());
+            source.setEncoding(encoding);
+            Document doc = dBuilder.parse(source);
 
             //optional, but recommended
             //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
@@ -51,7 +57,9 @@ public class WorklogImporter {
                     }
                 }
             }
-            fXmlFile.delete();
+            if (Settings.deleteFilesAfterImport) {
+                fXmlFile.delete();
+            }
         }
     }
 

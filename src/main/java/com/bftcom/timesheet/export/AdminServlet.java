@@ -47,8 +47,8 @@ public class AdminServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        UserProfile user = userManager.getRemoteUser(request);
-        if (user == null || !userManager.isSystemAdmin(user.getUserKey())) {
+        String user = userManager.getRemoteUsername(request);
+        if (user == null || !userManager.isSystemAdmin(user)) {
             redirectToLogin(request, response);
             return;
         }
@@ -89,8 +89,8 @@ public class AdminServlet extends HttpServlet {
                 //todo error popup
             }
         } else {
-            settings.put("exportPeriod", req.getParameter("exportPeriod"));
-            settings.put("importPeriod", req.getParameter("importPeriod"));
+//            settings.put("exportPeriod", req.getParameter("exportPeriod"));
+//            settings.put("importPeriod", req.getParameter("importPeriod"));
             settings.put("exportType", req.getParameter("exportType"));
             settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
             resp.sendRedirect(previousPage);
