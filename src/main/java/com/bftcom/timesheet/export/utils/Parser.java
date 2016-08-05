@@ -41,7 +41,7 @@ public class Parser {
     }
 
     public static String[] parseArray(String mass) {
-        if (mass == null || mass.equals("")) return new String[0];
+        if (mass == null || mass.equals("") || mass.equals("null")) return new String[0];
         return mass.substring(mass.indexOf('['), mass.lastIndexOf(']')).split(",");
     }
 

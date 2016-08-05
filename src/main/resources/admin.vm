@@ -25,7 +25,7 @@
 //        document.getElementById("importPeriod").disabled = !isAutoMode
         document.getElementById("startDate").disabled = isAutoMode
         document.getElementById("endDate").disabled = isAutoMode
-        document.getElementById("saveButton").value = isAutoMode ? "Сохранить" : "Выполнить"
+        document.getElementById("saveButton").value = isAutoMode ? "Запустить" : "Выполнить"
     }
     window.onload = function(){
         setExportMode(true)
@@ -40,7 +40,9 @@
                 <h2>Настройки плагина</h2>
             </div>
             <div class="aui-page-header-actions">
-                <input type="submit" id="saveButton" name="saveButton" value="Сохранить">
+                <input type="submit" id="startAuto" name="submitButton" value="Запустить">
+                <input type="submit" id="stopAuto" name="submitButton" value="Остановить">
+                <input type="submit" id="executeManualy" name="submitButton" value="Выполнить в ручном режиме">
             </div>
         </div>
     </header>
