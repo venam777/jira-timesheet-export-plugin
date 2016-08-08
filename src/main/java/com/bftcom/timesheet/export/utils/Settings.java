@@ -21,6 +21,7 @@ public class Settings {
     public static final String importJobId = importJobKey + ".0";
 
     public static final boolean deleteFilesAfterImport = true;
+    public static String importEncoding = "windows-1251";//UTF-8
 
     public static String getExportFileName() {
         return exportDir + "worklog_export_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.s").format(new Date()) + ".xml";

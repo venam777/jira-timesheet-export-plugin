@@ -20,7 +20,7 @@ public class WorklogImporter {
 
     private WorklogDataDao dao;
     private static WorklogImporter instance;
-    private String encoding = "windows-1251";
+
 //    private String encoding = "UTF-8";
     private static Logger logger = LoggerFactory.getLogger(WorklogImporter.class);
 
@@ -43,7 +43,7 @@ public class WorklogImporter {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             InputSource source = new InputSource(fXmlFile.toURI().toString());
-            source.setEncoding(encoding);
+            source.setEncoding(Settings.importEncoding);
             Document doc = dBuilder.parse(source);
 
             //optional, but recommended

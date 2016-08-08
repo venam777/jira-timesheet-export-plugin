@@ -14,6 +14,11 @@ import com.bftcom.timesheet.export.events.AutoExportStartEvent;
 import com.bftcom.timesheet.export.events.AutoExportStopEvent;
 import com.bftcom.timesheet.export.events.ManualExportStartEvent;
 import com.bftcom.timesheet.export.utils.Settings;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -77,6 +82,7 @@ public class AdminServlet extends HttpServlet {
         previousPage = request.getHeader("Referer");
         logger.debug("previous page : " + previousPage);
         PluginSettings pluginSettings = pluginSettingsFactory.createSettingsForKey(Settings.pluginKey);
+        // Create the Velocity Context
         Map<String, Object> params = new HashMap<>();
         params.put("startDate", ""/*pluginSettings.get("startDate")*/);
         params.put("endDate", ""/*pluginSettings.get("endDate")*/);
@@ -93,8 +99,19 @@ public class AdminServlet extends HttpServlet {
         params.put("projects", projectNames);
         params.put("exportType", pluginSettings.get("exportType"));
         logger.debug("form parametrs : " + params);
-        response.setContentType("text/html;charset=utf-8");
-        renderer.render("admin.vm", params, response.getWriter());
+        VelocityContext context = new VelocityContext(params);
+        VelocityEngine ve = new VelocityEngine();
+        ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+        ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+        try {
+            ve.init();
+            Template t = ve.getTemplate("admin.vm", "UTF-8");
+//            t.setEncoding("UTF-8");
+            response.setContentType("text/html;charset=utf-8");
+            t.merge(context, response.getWriter());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -154,7 +171,5 @@ public class AdminServlet extends HttpServlet {
     }
 
     @EventListener
-    public void onPluginEnabledEvent(PluginEnabledEvent event) {
-        int i = 5;
-    }
+    public void onPluginEnabledEvent(PluginEnabledEvent event) {}
 }

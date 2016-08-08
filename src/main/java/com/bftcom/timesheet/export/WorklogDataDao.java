@@ -65,7 +65,7 @@ public class WorklogDataDao {
         logger.debug("deleting worklog data with worklog.id = " + worklogId);
         activeObjects.deleteWithSQL(WorklogData.class, " WORKLOG_ID = ?", worklogId);
     }
-
+    //todo add check if worklog exists
     public void update(Long worklogId, String status, String rejectComment) {
         logger.debug("updating worklog data, status = " + status + ", rejectComment = " + rejectComment);
         activeObjects.executeInTransaction(() -> {

@@ -10,7 +10,7 @@
 
     <!-- add our i18n resource -->
     <resource type="i18n" name="i18n" location="jira-timesheet-export-plugin"/>
-
+    <resource type="velocity" name="admin" location="admin.vm"/>
     <!-- add our web resources -->
     <web-resource key="jira-timesheet-export-plugin-resources" name="jira-timesheet-export-plugin Web Resources">
         <dependency>com.atlassian.auiplugin:ajs</dependency>
@@ -21,7 +21,9 @@
                   location="/js/jira-timesheet-export-plugin.js"/>
         <resource type="download" name="images/" location="/images"/>
 
-        <context>jira-timesheet-export-plugin</context>
+        <!--<resource type="download" key="admin.vm" name="admin.vm" location="/admin.vm"/>-->
+        <!--<context>jira-timesheet-export-plugin</context>-->
+        <context>atl.general</context>
     </web-resource>
 
     <component-import key="ao" interface="com.atlassian.activeobjects.external.ActiveObjects"/>
