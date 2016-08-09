@@ -42,7 +42,14 @@ public class Parser {
 
     public static String[] parseArray(String mass) {
         if (mass == null || mass.equals("") || mass.equals("null")) return new String[0];
-        return mass.substring(mass.indexOf('['), mass.lastIndexOf(']')).split(",");
+        return mass.substring(mass.indexOf('[') + 1, mass.lastIndexOf(']')).split(",");
+    }
+
+    public static String parseWorklogComment(String dirtyComment) {
+        if (dirtyComment.startsWith("{panel:title") && dirtyComment.endsWith("{panel}")) {
+            return dirtyComment.substring(dirtyComment.indexOf("}") + 1, dirtyComment.lastIndexOf("{"));
+        }
+        return dirtyComment;
     }
 
 }

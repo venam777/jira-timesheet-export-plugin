@@ -2,11 +2,22 @@ package com.bftcom.timesheet.export;
 
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.bc.JiraServiceContext;
+import com.atlassian.jira.bc.JiraServiceContextImpl;
+import com.atlassian.jira.bc.issue.visibility.GroupVisibility;
+import com.atlassian.jira.bc.issue.worklog.WorklogInputParameters;
+import com.atlassian.jira.bc.issue.worklog.WorklogInputParametersImpl;
+import com.atlassian.jira.bc.issue.worklog.WorklogResult;
+import com.atlassian.jira.bc.issue.worklog.WorklogService;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.issue.worklog.WorklogManager;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.util.JiraDurationUtils;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.bftcom.timesheet.export.entity.WorklogData;
+import com.bftcom.timesheet.export.entity.WorklogDataStyle;
+import com.bftcom.timesheet.export.utils.Parser;
 import net.java.ao.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +68,7 @@ public class WorklogDataDao {
             WorklogData data = get(worklogId, true);
             data.setStatus(status);
             data.save();
+            onWorklogStatusChanged(worklogId);
             return data;
         });
     }
@@ -65,17 +77,23 @@ public class WorklogDataDao {
         logger.debug("deleting worklog data with worklog.id = " + worklogId);
         activeObjects.deleteWithSQL(WorklogData.class, " WORKLOG_ID = ?", worklogId);
     }
-    //todo add check if worklog exists
+
     public void update(Long worklogId, String status, String rejectComment) {
+        logger.debug("WorklogDataDao#update started");
+        if (ComponentAccessor.getWorklogManager().getById(worklogId) == null) {
+            logger.debug("no worklog with id = " + worklogId + " was found, nothing to do");
+        }
         logger.debug("updating worklog data, status = " + status + ", rejectComment = " + rejectComment);
-        activeObjects.executeInTransaction(() -> {
-            WorklogData data = get(worklogId, true);
-            data.setStatus(status);
-            data.setRejectComment(rejectComment);
-            data.save();
-            logger.debug("updating was finished");
-            return data;
-        });
+        setWorklogStatus(worklogId, status);
+        if (rejectComment != null) {
+            activeObjects.executeInTransaction(() -> {
+                WorklogData data = get(worklogId, true);
+                data.setRejectComment(rejectComment);
+                data.save();
+                logger.debug("updating was finished");
+                return data;
+            });
+        }
     }
 
     protected WorklogData create(Long worklogId) {
@@ -86,6 +104,7 @@ public class WorklogDataDao {
             data.setStatus(WorklogData.NOT_VIEWED_STATUS);
             data.setRejectComment("");
             data.save();
+            onWorklogStatusChanged(worklogId);
             return data;
         });
     }
@@ -102,5 +121,36 @@ public class WorklogDataDao {
             return create(worklogId);
         }
         return null;
+    }
+
+    protected void onWorklogStatusChanged(Long worklogId) {
+        Worklog worklog = ComponentAccessor.getWorklogManager().getById(worklogId);
+        if (worklog == null) return;
+        WorklogData worklogData = get(worklogId, false);
+        if (worklogData == null) return;
+        String title = worklogData.getStatus();
+        if (title.equals(WorklogData.REJECTED_STATUS) && worklogData.getRejectComment() != null && !worklogData.getRejectComment().equals("")) {
+            title += " : " + worklogData.getRejectComment();
+        }
+        String comment = Parser.parseWorklogComment(worklog.getComment());
+        WorklogDataStyle.Color color = WorklogDataStyle.style.get(worklogData.getStatus());
+        comment = "{panel:title=" + title + "|borderStyle=solid|borderColor="
+                + color.borderColor + "|titleBGColor=" + color.titleColor + "|bgColor=" + color.backgroundColor + "}"
+                + comment + "{panel}";
+        WorklogService worklogService = ComponentAccessor.getComponent(WorklogService.class);
+        ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+        if (user == null) {
+            user = ComponentAccessor.getUserManager().getUserByKey("admin");
+        }
+        JiraServiceContext serviceContext = new JiraServiceContextImpl(user);
+        JiraDurationUtils durationUtils = ComponentAccessor.getJiraDurationUtils();
+        WorklogInputParameters parameters = WorklogInputParametersImpl.builder()
+                .worklogId(worklog.getId()).comment(comment).issue(worklog.getIssue()).startDate(worklog.getStartDate())
+                .timeSpent(durationUtils.getShortFormattedDuration(worklog.getTimeSpent()))
+                .build();
+        WorklogResult result = worklogService.validateUpdate(serviceContext, parameters);
+        if (result != null) {
+            worklogService.updateAndRetainRemainingEstimate(serviceContext, result, false);
+        }
     }
 }

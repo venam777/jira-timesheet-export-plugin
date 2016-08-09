@@ -25,7 +25,12 @@
 //        document.getElementById("importPeriod").disabled = !isAutoMode
         document.getElementById("startDate").disabled = isAutoMode
         document.getElementById("endDate").disabled = isAutoMode
-        document.getElementById("saveButton").value = isAutoMode ? "Запустить" : "Выполнить"
+        document.getElementById("startAuto").disabled = !isAutoMode
+        document.getElementById("stopAuto").disabled = !isAutoMode
+        document.getElementById("executeManualy").disabled = isAutoMode
+        document.getElementById("startDate").required = !isAutoMode
+        document.getElementById("endDate").required = !isAutoMode
+        //document.getElementById("saveButton").value = isAutoMode ? "Запустить" : "Выполнить"
     }
     window.onload = function(){
         setExportMode(true)
@@ -56,14 +61,14 @@
                 <input type="radio" id="manualExportMode" name="exportType" value="manual" onchange="setExportMode(false)">Вручную
             </td>
         </tr>
-        <tr>
-            <td>Директория экспорта:</td>
-            <td><input type="text" id="exportDir" name="exportDir" value=$exportDir></td>
-        </tr>
-        <tr>
-            <td>Директория импорта:</td>
-            <td><input type="text" id="importDir" name="importDir" value=$importDir></td>
-        </tr>
+##        <tr>
+##            <td>Директория экспорта:</td>
+##            <td><input type="text" id="exportDir" name="exportDir" value=$exportDir></td>
+##        </tr>
+##        <tr>
+##            <td>Директория импорта:</td>
+##            <td><input type="text" id="importDir" name="importDir" value=$importDir></td>
+##        </tr>
 ##        <tr>
 ##            <td>Периодичность экспорта, в часах:</td>
 ##            <td><input type="number" id="exportPeriod" name="exportPeriod" value=$exportPeriod step="0.1"></td>

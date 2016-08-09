@@ -34,7 +34,6 @@ public class ExportPluginJob implements JobRunner {
         try {
             logger.debug("export job started, start time = " + request.getStartTime()
                     + ", parameters = " + request.getJobConfig().getParameters());
-            //todo ошибка в названии файла
             WorklogExporter.getInstance().exportWorklog(callback.call(), Settings.getExportFileName());
         } catch (TransformerException | ParserConfigurationException e) {
             e.printStackTrace();

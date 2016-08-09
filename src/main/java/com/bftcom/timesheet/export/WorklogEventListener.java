@@ -1,6 +1,15 @@
 package com.bftcom.timesheet.export;
 
+import com.atlassian.jira.bc.JiraServiceContext;
+import com.atlassian.jira.bc.JiraServiceContextImpl;
+import com.atlassian.jira.bc.issue.worklog.WorklogInputParameters;
+import com.atlassian.jira.bc.issue.worklog.WorklogInputParametersImpl;
+import com.atlassian.jira.bc.issue.worklog.WorklogResult;
+import com.atlassian.jira.bc.issue.worklog.WorklogService;
+import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.worklog.Worklog;
+import com.atlassian.jira.issue.worklog.WorklogManager;
+import com.atlassian.jira.util.ErrorCollections;
 import com.bftcom.timesheet.export.entity.WorklogData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +25,8 @@ public class WorklogEventListener {
     }
 
     public void onWorklogCreated(Worklog worklog) {
-        dao.setWorklogStatus(worklog.getId(), WorklogData.NOT_VIEWED_STATUS);
+        dao.create(worklog.getId());
+        //dao.setWorklogStatus(worklog.getId(), WorklogData.NOT_VIEWED_STATUS);
     }
 
     public void onWorklogUpdated(Worklog worklog) {

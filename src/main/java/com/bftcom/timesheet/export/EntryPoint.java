@@ -7,7 +7,6 @@ import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.type.EventType;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
-import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.plugin.event.events.PluginInstalledEvent;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
@@ -59,6 +58,7 @@ public class EntryPoint {
         this.schedulerService = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerService.class);
         this.historyService = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class);
         this.activeObjects = activeObjects;
+        this.worklogEventListener = new WorklogEventListener(new WorklogDataDao(activeObjects));
         saveDefaultPluginSettings();
         logger.debug("Entry point finish creating");
     }

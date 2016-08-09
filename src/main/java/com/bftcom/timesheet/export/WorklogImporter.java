@@ -9,6 +9,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -44,8 +45,12 @@ public class WorklogImporter {
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             InputSource source = new InputSource(fXmlFile.toURI().toString());
             source.setEncoding(Settings.importEncoding);
-            Document doc = dBuilder.parse(source);
-
+            Document doc;
+            try {
+                doc = dBuilder.parse(source);
+            } catch (SAXParseException e) {
+                continue;
+            }
             //optional, but recommended
             //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();

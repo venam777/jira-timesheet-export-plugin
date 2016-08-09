@@ -7,6 +7,7 @@ import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.issue.worklog.WorklogManager;
 import com.atlassian.jira.project.Project;
 import com.bftcom.timesheet.export.entity.WorklogData;
+import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,7 @@ public class WorklogExporter {
             Double spentTimeHours = (double) worklog.getTimeSpent() / 60 / 60;
             String amount = String.valueOf((double) Math.round(spentTimeHours * 100) / 100);
             addAttribute(doc, timesheet, "AMOUNT", amount);
-            addAttribute(doc, timesheet, "REMARK", worklog.getComment());
+            addAttribute(doc, timesheet, "REMARK", Parser.parseWorklogComment(worklog.getComment()));
             addAttribute(doc, timesheet, "WORKDATE", Settings.dateFormat.format(worklog.getStartDate()));
             addAttribute(doc, timesheet, "PROJECTID", worklog.getIssue().getProjectObject().getId().toString());
             logger.debug("worklog params: id = " + worklog.getId() + ", issue.id = " + worklog.getIssue().getId()
