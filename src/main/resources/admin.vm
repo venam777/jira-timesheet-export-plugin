@@ -1,42 +1,12 @@
-#requireResource("com.bftcom:jira-timesheet-export-plugin:jira-timesheet-export-plugin.css")
-#requireResource("com.bftcom:jira-timesheet-export-plugin:jira-timesheet-export-plugin.js")
+#requireResource("com.bftcom.jira-timesheet-export-plugin:jira-timesheet-export-plugin-resources")
 <html>
 <head>
     <title>XProduct Admin</title>
     <meta name="decorator" content="atl.admin">
     <link href="css/jira-timesheet-export-plugin.css" rel="stylesheet" type="text/css">
+    <script src="js/jira-timesheet-export-plugin.js"></script>
 </head>
 <body>
-##todo перенести это все в css и js файлы, но они почему-то пустые при подключении
-##===============resources=================
-<style>
-    #timesheet-export-props td:first-of-type {
-        font-weight: bold;
-        width: 40%;
-    }
-
-    #timesheet-export-props td input:not([type="radio"]), #timesheet-export-props td select {
-        width: 100%;
-    }
-</style>
-<script>
-    function setExportMode(isAutoMode) {
-//        document.getElementById("exportPeriod").disabled = !isAutoMode
-//        document.getElementById("importPeriod").disabled = !isAutoMode
-        document.getElementById("startDate").disabled = isAutoMode
-        document.getElementById("endDate").disabled = isAutoMode
-        document.getElementById("startAuto").disabled = !isAutoMode
-        document.getElementById("stopAuto").disabled = !isAutoMode
-        document.getElementById("executeManualy").disabled = isAutoMode
-        document.getElementById("startDate").required = !isAutoMode
-        document.getElementById("endDate").required = !isAutoMode
-        //document.getElementById("saveButton").value = isAutoMode ? "Запустить" : "Выполнить"
-    }
-    window.onload = function(){
-        setExportMode(true)
-    }
-</script>
-##===============resources=================
 <form id="admin" method="post">
 
     <header class="aui-page-header">

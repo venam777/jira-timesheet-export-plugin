@@ -20,9 +20,15 @@
         <resource type="download" key="jira-timesheet-export-plugin.js" name="jira-timesheet-export-plugin.js"
                   location="/js/jira-timesheet-export-plugin.js"/>
         <resource type="download" name="images/" location="/images"/>
+        <context>atl.admin</context>
+    </web-resource>
 
-        <!--<resource type="download" key="admin.vm" name="admin.vm" location="/admin.vm"/>-->
-        <!--<context>jira-timesheet-export-plugin</context>-->
+    <web-resource key="timesheet-plugin-worklog-resources" name="timesheet-plugin-worklog-resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <resource type="download" key="timesheet-plugin-worklog-script.js" name="timesheet-plugin-worklog-script.js"
+                  location="/js/timesheet-plugin-worklog-script.js"/>
+        <resource type="download" key="timesheet-plugin-worklog-style.css" name="timesheet-plugin-worklog-style.css"
+                  location="/css/timesheet-plugin-worklog-style.css"/>
         <context>atl.general</context>
     </web-resource>
 
