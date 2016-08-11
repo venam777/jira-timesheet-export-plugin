@@ -3,9 +3,12 @@ package com.bftcom.timesheet.export;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.event.api.*;
 import com.atlassian.event.api.EventListener;
+import com.atlassian.jira.action.JiraActionSupport;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.type.EventType;
+import com.atlassian.jira.web.action.IssueActionSupport;
+import com.atlassian.jira.web.action.issue.UpdateWorklog;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginInstalledEvent;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -59,6 +62,7 @@ public class EntryPoint {
         this.historyService = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class);
         this.activeObjects = activeObjects;
         this.worklogEventListener = new WorklogEventListener(new WorklogDataDao(activeObjects));
+        WorklogDataDao.createInstance(activeObjects);
         saveDefaultPluginSettings();
         logger.debug("Entry point finish creating");
     }

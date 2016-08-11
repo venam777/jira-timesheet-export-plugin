@@ -31,6 +31,7 @@ public class WorklogDataDao {
     //    @ComponentImport
     protected ActiveObjects activeObjects;
     private static Logger logger = LoggerFactory.getLogger(WorklogDataDao.class);
+    private static WorklogDataDao instance;
 
     //    @Inject
     public WorklogDataDao(ActiveObjects activeObjects) {
@@ -40,6 +41,13 @@ public class WorklogDataDao {
         this.activeObjects = activeObjects;
     }
 
+    public static void createInstance(ActiveObjects activeObjects) {
+        instance = new WorklogDataDao(activeObjects);
+    }
+
+    public static WorklogDataDao getInstance() {
+        return instance;
+    }
     /**
      * ВОзвращает true, если worklog можно изменять
      *
@@ -123,6 +131,7 @@ public class WorklogDataDao {
         return null;
     }
 
+    //todo убрать это отсюда!
     protected void onWorklogStatusChanged(Long worklogId) {
         Worklog worklog = ComponentAccessor.getWorklogManager().getById(worklogId);
         if (worklog == null) return;
