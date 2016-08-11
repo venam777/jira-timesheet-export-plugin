@@ -15,20 +15,19 @@
         })
     }
 );*/
-$(document).ready(function() {
-    disableButtons($('div[id^="worklog-"]'));
-});
 
 oldfunc = window.onload;
 window.onload = function(event) {
     if (oldfunc) {
         oldfunc(event);
     }
-    enableMutationObserver();
+   window.setInterval(function() {
+       disableButtons($('div[id^="worklog-"]'));
+   }, 1000);
 };
 
 
-function enableMutationObserver() {
+/*function enableMutationObserver() {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -43,7 +42,7 @@ function enableMutationObserver() {
         });
     });
     observer.observe(document.body, {childList: true,  subtree: true});
-}
+}*/
 
 function disableButtons(node) {
     $(node).hover(function () {
