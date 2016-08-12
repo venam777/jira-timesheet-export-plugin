@@ -28,6 +28,7 @@ import com.bftcom.timesheet.export.utils.Callback;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
 import com.google.common.collect.ImmutableMap;
+import org.apache.velocity.runtime.directive.Parse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -87,18 +88,6 @@ public class EntryPoint {
         }
     }
 
-   /* @EventListener
-    public void onPluginEnabled(PluginEnabledEvent event) {
-        if (checkPluginByName(event.getPlugin().getName())) {
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-
-                }
-            }, startDelayInMinutes * 60 * 1000);
-        }
-    }*/
-
     @EventListener
     public void onAutoExportStartEvent(AutoExportStartEvent event) {
         checkComponents();
@@ -106,10 +95,11 @@ public class EntryPoint {
             @Override
             public WorklogExportParams call() {
                 RunDetails details = historyService.getLastSuccessfulRunForJob(JobId.of(Settings.exportJobId));
+                String[] projects = Parser.parseArray((String) getSettings().get("projects"));
                 if (details == null) {
-                    return new WorklogExportParams(WorklogExportParams.getStartOfCurrentMonth(), WorklogExportParams.getEndOfCurrentMonth());
+                    return new WorklogExportParams(WorklogExportParams.getStartOfCurrentMonth(), WorklogExportParams.getEndOfCurrentMonth()).projects(projects);
                 }
-                return new WorklogExportParams(details.getStartTime(), WorklogExportParams.getEndOfCurrentMonth());
+                return new WorklogExportParams(details.getStartTime(), WorklogExportParams.getEndOfCurrentMonth()).projects(projects);
             }
         }));
         schedulerService.registerJobRunner(JobRunnerKey.of(Settings.importJobKey), new ImportPluginJob());
@@ -147,7 +137,6 @@ public class EntryPoint {
 
     private void checkComponents() {
         if (isComponentsInitialized) return;
-        //ActiveObjects activeObjects = ComponentAccessor.getOSGiComponentInstanceOfType(ActiveObjects.class);
         if (activeObjects == null) {
             throw new NullPointerException("Active objects is null!");
         }
@@ -172,8 +161,6 @@ public class EntryPoint {
             logger.debug("There was an error while creating plugin settings, settings are null");
             return;
         }
-//        settings.put("startDate", Settings.dateFormat.format(WorklogExportParams.getStartOfCurrentMonth()));
-//        settings.put("endDate", Settings.dateFormat.format(WorklogExportParams.getEndOfCurrentMonth()));
         settings.put("exportPeriod", Settings.exportPeriod.toString());
         settings.put("importPeriod", Settings.exportPeriod.toString());
         settings.put("exportDir", Settings.exportDir);

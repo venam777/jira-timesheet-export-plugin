@@ -22,7 +22,6 @@ public class WorklogImporter {
     private WorklogDataDao dao;
     private static WorklogImporter instance;
 
-//    private String encoding = "UTF-8";
     private static Logger logger = LoggerFactory.getLogger(WorklogImporter.class);
 
     private WorklogImporter(WorklogDataDao dao) {

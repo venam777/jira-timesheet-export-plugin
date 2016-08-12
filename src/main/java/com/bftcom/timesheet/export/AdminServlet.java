@@ -122,13 +122,8 @@ public class AdminServlet extends HttpServlet {
         switch (action) {
             case "Запустить":
                 logger.debug("export type = start auto");
-                //            settings.put("exportPeriod", req.getParameter("exportPeriod"));
-//            settings.put("importPeriod", req.getParameter("importPeriod"));
-                //settings.put("exportType", req.getParameter("exportType"));
-
                 settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
                 eventPublisher.publish(new AutoExportStartEvent());
-                //resp.sendRedirect(previousPage);
                 break;
             case "Остановить":
                 logger.debug("export type = stop auto");
@@ -140,18 +135,6 @@ public class AdminServlet extends HttpServlet {
                 settings.put("endDateDate", req.getParameter("endDateDate"));
                 settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
                 eventPublisher.publish(new ManualExportStartEvent());
-                  /*Date startDate = Parser.parseDate(req.getParameter("startDate"), WorklogExportParams.getStartOfCurrentMonth());
-            Date endDate = Parser.parseDate(req.getParameter("endDate"), WorklogExportParams.getEndOfCurrentMonth());
-            logger.debug("start date = " + startDate + ", end date = " + endDate);
-            try {
-                WorklogExportParams params = new WorklogExportParams(startDate, endDate);
-                params.projects(req.getParameterMap().get("projects"));
-                logger.debug("projects = " + Arrays.toString(req.getParameterMap().get("projects")));
-                WorklogExporter.getInstance().exportWorklog(params, Settings.getExportFileName());
-            } catch (TransformerException | ParserConfigurationException e) {
-                e.printStackTrace();
-                //todo error popup
-            }*/
                 break;
         }
         resp.sendRedirect(previousPage);
@@ -171,5 +154,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     @EventListener
-    public void onPluginEnabledEvent(PluginEnabledEvent event) {}
+    public void onPluginEnabledEvent(PluginEnabledEvent event) {
+        //заглушка, чтобы spring не ругался
+    }
 }

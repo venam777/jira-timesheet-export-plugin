@@ -45,7 +45,7 @@ public class WorklogDataDao {
         instance = new WorklogDataDao(activeObjects);
     }
 
-    public static WorklogDataDao getInstance() {
+    public synchronized static WorklogDataDao getInstance() {
         return instance;
     }
     /**
@@ -58,7 +58,7 @@ public class WorklogDataDao {
         return getWorklogStatus(worklog.getId()).equals(WorklogData.APPROVED_STATUS);
     }
 
-    public boolean isWorklogExportable(Worklog worklog) {
+    public synchronized boolean isWorklogExportable(Worklog worklog) {
         String worklogStatus = getWorklogStatus(worklog.getId());
         boolean result = worklogStatus.equals("") || worklogStatus.equals(WorklogData.NOT_VIEWED_STATUS);
         logger.debug("worklog status = " + worklogStatus + ", worklog exportable = " + result);
@@ -70,7 +70,7 @@ public class WorklogDataDao {
         return data != null ? data.getStatus() : "";
     }
 
-    public void setWorklogStatus(Long worklogId, String status) {
+    public synchronized void setWorklogStatus(Long worklogId, String status) {
         logger.debug("set worklog status, status = " + status + ", worklogId = " + worklogId);
         activeObjects.executeInTransaction(() -> {
             WorklogData data = get(worklogId, true);
@@ -81,12 +81,12 @@ public class WorklogDataDao {
         });
     }
 
-    public void delete(Long worklogId) {
+    public synchronized void delete(Long worklogId) {
         logger.debug("deleting worklog data with worklog.id = " + worklogId);
         activeObjects.deleteWithSQL(WorklogData.class, " WORKLOG_ID = ?", worklogId);
     }
 
-    public void update(Long worklogId, String status, String rejectComment) {
+    public synchronized void update(Long worklogId, String status, String rejectComment) {
         logger.debug("WorklogDataDao#update started");
         if (ComponentAccessor.getWorklogManager().getById(worklogId) == null) {
             logger.debug("no worklog with id = " + worklogId + " was found, nothing to do");
@@ -104,7 +104,7 @@ public class WorklogDataDao {
         }
     }
 
-    protected WorklogData create(Long worklogId) {
+    protected synchronized WorklogData create(Long worklogId) {
         logger.debug("creating new worklog data for worklog with id = " + worklogId);
         return activeObjects.executeInTransaction(() -> {
             WorklogData data = activeObjects.create(WorklogData.class);
@@ -117,7 +117,7 @@ public class WorklogDataDao {
         });
     }
 
-    protected WorklogData get(Long worklogId, boolean createIfNotExists) {
+    protected synchronized WorklogData get(Long worklogId, boolean createIfNotExists) {
         logger.debug("get worklog data for worklog with id = " + worklogId);
         WorklogData[] mass = activeObjects.find(WorklogData.class, Query.select().where("WORKLOG_ID = ?", worklogId));
         if (mass != null && mass.length == 1) {

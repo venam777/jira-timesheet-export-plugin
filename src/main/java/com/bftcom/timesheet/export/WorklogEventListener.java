@@ -26,7 +26,6 @@ public class WorklogEventListener {
 
     public void onWorklogCreated(Worklog worklog) {
         dao.create(worklog.getId());
-        //dao.setWorklogStatus(worklog.getId(), WorklogData.NOT_VIEWED_STATUS);
     }
 
     public void onWorklogUpdated(Worklog worklog) {
