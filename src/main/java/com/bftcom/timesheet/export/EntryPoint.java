@@ -3,16 +3,12 @@ package com.bftcom.timesheet.export;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.event.api.*;
 import com.atlassian.event.api.EventListener;
-import com.atlassian.jira.action.JiraActionSupport;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.type.EventType;
-import com.atlassian.jira.web.action.IssueActionSupport;
-import com.atlassian.jira.web.action.issue.UpdateWorklog;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginInstalledEvent;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
-import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.scheduler.SchedulerHistoryService;
 import com.atlassian.scheduler.SchedulerService;
@@ -28,7 +24,6 @@ import com.bftcom.timesheet.export.utils.Callback;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
 import com.google.common.collect.ImmutableMap;
-import org.apache.velocity.runtime.directive.Parse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -46,7 +41,6 @@ public class EntryPoint {
 
     protected EventPublisher eventPublisher;
     protected WorklogEventListener worklogEventListener;
-    protected PluginSettingsFactory pluginSettingsFactory;
     protected SchedulerService schedulerService;
     protected SchedulerHistoryService historyService;
     protected ActiveObjects activeObjects;
@@ -58,13 +52,12 @@ public class EntryPoint {
     public EntryPoint(@ComponentImport ActiveObjects activeObjects) {
         logger.debug("Entry point start creating");
         this.eventPublisher = ComponentAccessor.getOSGiComponentInstanceOfType(EventPublisher.class);
-        this.pluginSettingsFactory = ComponentAccessor.getOSGiComponentInstanceOfType(PluginSettingsFactory.class);
         this.schedulerService = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerService.class);
         this.historyService = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class);
         this.activeObjects = activeObjects;
         this.worklogEventListener = new WorklogEventListener(new WorklogDataDao(activeObjects));
         WorklogDataDao.createInstance(activeObjects);
-        saveDefaultPluginSettings();
+        Settings.init(ComponentAccessor.getOSGiComponentInstanceOfType(PluginSettingsFactory.class));
         logger.debug("Entry point finish creating");
     }
 
@@ -84,7 +77,7 @@ public class EntryPoint {
     public void pluginInstalled(PluginInstalledEvent event) {
         if (checkPluginByName(event.getPlugin().getName())) {
             logger.debug("plugin was installed");
-            saveDefaultPluginSettings();
+            Settings.saveDefaultSettings();
         }
     }
 
@@ -95,18 +88,17 @@ public class EntryPoint {
             @Override
             public WorklogExportParams call() {
                 RunDetails details = historyService.getLastSuccessfulRunForJob(JobId.of(Settings.exportJobId));
-                String[] projects = Parser.parseArray((String) getSettings().get("projects"));
+                String[] projects = Parser.parseArray(Settings.get("projects"));
                 if (details == null) {
-                    return new WorklogExportParams(WorklogExportParams.getStartOfCurrentMonth(), WorklogExportParams.getEndOfCurrentMonth()).projects(projects);
+                    return new WorklogExportParams(Settings.getStartOfCurrentMonth(), Settings.getEndOfCurrentMonth()).projects(projects);
                 }
-                return new WorklogExportParams(details.getStartTime(), WorklogExportParams.getEndOfCurrentMonth()).projects(projects);
+                return new WorklogExportParams(details.getStartTime(), Settings.getEndOfCurrentMonth()).projects(projects);
             }
         }));
         schedulerService.registerJobRunner(JobRunnerKey.of(Settings.importJobKey), new ImportPluginJob());
-        PluginSettings pluginSettings = getSettings();
         try {
-            startJob(Parser.parseFloat(pluginSettings.get("exportPeriod"), Settings.exportPeriod), Settings.exportJobKey, Settings.exportJobId);
-            startJob(Parser.parseFloat(pluginSettings.get("importPeriod"), Settings.importPeriod), Settings.importJobKey, Settings.importJobId);
+            startJob(Parser.parseFloat(Settings.get("exportPeriod"), Settings.getDefault("exportPeriod")), Settings.exportJobKey, Settings.exportJobId);
+            startJob(Parser.parseFloat(Settings.get("importPeriod"), Settings.getDefault("importPeriod")), Settings.importJobKey, Settings.importJobId);
         } catch (SchedulerServiceException e) {
             e.printStackTrace();
         }
@@ -123,11 +115,8 @@ public class EntryPoint {
     @EventListener
     public void onManualExportStartEvent(ManualExportStartEvent event) {
         checkComponents();
-        PluginSettings settings = getSettings();
-        Date startDate = Parser.parseDate(settings.get("startDate"), WorklogExportParams.getStartOfCurrentMonth());
-        Date endDate = Parser.parseDate(settings.get("endDate"), WorklogExportParams.getEndOfCurrentMonth());
-        String[] projects = Parser.parseArray((String) settings.get("projects"));
-        WorklogExportParams exportParams = new WorklogExportParams(startDate, endDate).projects(projects);
+        String[] projects = Parser.parseArray(Settings.get("projects"));
+        WorklogExportParams exportParams = new WorklogExportParams(event.startDate, event.endDate).projects(projects);
         try {
             WorklogExporter.getInstance().exportWorklog(exportParams);
         } catch (TransformerException | ParserConfigurationException e) {
@@ -154,20 +143,6 @@ public class EntryPoint {
         }
     }
 
-    private void saveDefaultPluginSettings() {
-        logger.debug("saving default settings");
-        PluginSettings settings = getSettings();
-        if (settings == null) {
-            logger.debug("There was an error while creating plugin settings, settings are null");
-            return;
-        }
-        settings.put("exportPeriod", Settings.exportPeriod.toString());
-        settings.put("importPeriod", Settings.exportPeriod.toString());
-        settings.put("exportDir", Settings.exportDir);
-        settings.put("importDir", Settings.importDir);
-        settings.put("projects", "[]");
-    }
-
     private void startJob(Float periodInHours, String jobRunnerKey, String jobId) throws SchedulerServiceException {
         logger.debug("start job, period = " + periodInHours + ", jobRunnerKey = " + jobRunnerKey + ", jobId = " + jobId);
         JobConfig config = JobConfig.forJobRunnerKey(JobRunnerKey.of(jobRunnerKey))
@@ -181,10 +156,6 @@ public class EntryPoint {
 
     private boolean checkPluginByName(String pluginName) {
         return pluginName.equals("jira-timesheet-export-plugin");
-    }
-
-    private PluginSettings getSettings() {
-        return pluginSettingsFactory.createSettingsForKey(Settings.pluginKey);
     }
 
     @EventListener

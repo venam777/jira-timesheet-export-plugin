@@ -28,7 +28,7 @@ public class ImportPluginJob implements JobRunner {
         try {
             logger.debug("import job started, start date = " + request.getStartTime() +
                     ", parameters = " + request.getJobConfig().getParameters());
-            WorklogImporter.getInstance().importWorklog(Settings.importDir);
+            WorklogImporter.getInstance().importWorklog(Settings.get("importDir"));
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();
             StringWriter sw = new StringWriter();

@@ -45,11 +45,11 @@ public class WorklogImporter {
             InputSource source = new InputSource(fXmlFile.toURI().toString());
             source.setEncoding(Settings.importEncoding);
             Document doc;
-            try {
+//            try {
                 doc = dBuilder.parse(source);
-            } catch (SAXParseException e) {
-                continue;
-            }
+//            } catch (SAXParseException e) {
+//                continue;
+//            }
             //optional, but recommended
             //read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();

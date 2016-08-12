@@ -9,10 +9,14 @@ import com.atlassian.sal.api.auth.LoginUriProvider;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.user.UserManager;
+import com.atlassian.scheduler.SchedulerHistoryService;
+import com.atlassian.scheduler.config.JobId;
+import com.atlassian.scheduler.status.RunDetails;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.bftcom.timesheet.export.events.AutoExportStartEvent;
 import com.bftcom.timesheet.export.events.AutoExportStopEvent;
 import com.bftcom.timesheet.export.events.ManualExportStartEvent;
+import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -39,10 +43,6 @@ public class AdminServlet extends HttpServlet {
     private UserManager userManager;
     //    @ComponentImport
     private LoginUriProvider loginUriProvider;
-    //    @ComponentImport
-    private TemplateRenderer renderer;
-    //    @ComponentImport
-    private PluginSettingsFactory pluginSettingsFactory;
     private String previousPage;
     private EventPublisher eventPublisher;
     private static AdminServlet previousInstance = null;
@@ -56,8 +56,6 @@ public class AdminServlet extends HttpServlet {
         logger.debug("creating admin servlet");
         this.userManager = ComponentAccessor.getOSGiComponentInstanceOfType(UserManager.class);
         this.loginUriProvider = ComponentAccessor.getOSGiComponentInstanceOfType(LoginUriProvider.class);
-        this.renderer = ComponentAccessor.getOSGiComponentInstanceOfType(TemplateRenderer.class);
-        this.pluginSettingsFactory = ComponentAccessor.getOSGiComponentInstanceOfType(PluginSettingsFactory.class);
         this.eventPublisher = ComponentAccessor.getOSGiComponentInstanceOfType(EventPublisher.class);
         if (previousInstance != null) {
             eventPublisher.unregister(previousInstance);
@@ -81,15 +79,23 @@ public class AdminServlet extends HttpServlet {
         }
         previousPage = request.getHeader("Referer");
         logger.debug("previous page : " + previousPage);
-        PluginSettings pluginSettings = pluginSettingsFactory.createSettingsForKey(Settings.pluginKey);
-        // Create the Velocity Context
+
         Map<String, Object> params = new HashMap<>();
         params.put("startDate", ""/*pluginSettings.get("startDate")*/);
         params.put("endDate", ""/*pluginSettings.get("endDate")*/);
-        params.put("exportPeriod", pluginSettings.get("exportPeriod"));
-        params.put("importPeriod", pluginSettings.get("importPeriod"));
-        params.put("exportDir", pluginSettings.get("exportDir"));
-        params.put("importDir", pluginSettings.get("importDir"));
+        params.put("exportPeriod", Settings.get("exportPeriod"));
+        params.put("importPeriod", Settings.get("importPeriod"));
+        params.put("exportDir", Settings.get("exportDir"));
+        params.put("importDir", Settings.get("importDir"));
+
+        RunDetails lastRunExportDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class).getLastRunForJob(JobId.of(Settings.exportJobId));
+        params.put("lastRunDateExport", lastRunExportDetails != null ? Settings.dateTimeFormat.format(lastRunExportDetails.getStartTime()) : "");
+        params.put("lastRunMessageExport", lastRunExportDetails != null ? lastRunExportDetails.getMessage() : "");
+
+        RunDetails lastRunImportDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class).getLastRunForJob(JobId.of(Settings.importJobId));
+        params.put("lastRunDateImport", lastRunImportDetails != null ? Settings.dateTimeFormat.format(lastRunImportDetails.getStartTime()) : "");
+        params.put("lastRunMessageImport", lastRunImportDetails != null ? lastRunImportDetails.getMessage() : "");
+
         ProjectManager projectManager = ComponentAccessor.getProjectManager();
         List<String> projectNames = new ArrayList<>();
         projectManager.getProjects().forEach(p -> {
@@ -97,7 +103,8 @@ public class AdminServlet extends HttpServlet {
         });
         Collections.sort(projectNames);
         params.put("projects", projectNames);
-        params.put("exportType", pluginSettings.get("exportType"));
+        //todo default param?
+        //params.put("exportType", Settings.get("exportType"));
         logger.debug("form parametrs : " + params);
         VelocityContext context = new VelocityContext(params);
         VelocityEngine ve = new VelocityEngine();
@@ -117,27 +124,38 @@ public class AdminServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         logger.debug("saving configure parameters, parameters = " + req.getParameterMap());
-        PluginSettings settings = pluginSettingsFactory.createSettingsForKey(Settings.pluginKey);
         String action = req.getParameter("submitButton");
         switch (action) {
+            //todo i18n
+            case "Сохранить":
+                saveMainSettings(req);
+                break;
             case "Запустить":
                 logger.debug("export type = start auto");
-                settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
+                saveMainSettings(req);
                 eventPublisher.publish(new AutoExportStartEvent());
                 break;
             case "Остановить":
                 logger.debug("export type = stop auto");
+                saveMainSettings(req);
                 eventPublisher.publish(new AutoExportStopEvent());
                 break;
             case "Выполнить в ручном режиме":
                 logger.debug("export type = manual");
-                settings.put("startDate", req.getParameter("startDate"));
-                settings.put("endDateDate", req.getParameter("endDateDate"));
-                settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
-                eventPublisher.publish(new ManualExportStartEvent());
+                Settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
+                eventPublisher.publish(new ManualExportStartEvent(Parser.parseDate(req.getParameter("startDate"), Settings.getStartOfCurrentMonth()),
+                        Parser.parseDate(req.getParameter("endDate"), Settings.getEndOfCurrentMonth())));
                 break;
         }
         resp.sendRedirect(previousPage);
+    }
+
+    private void saveMainSettings(HttpServletRequest req) {
+        Settings.put("exportDir", req.getParameter("exportDir"));
+        Settings.put("importDir", req.getParameter("importDir"));
+        Settings.put("exportPeriod", req.getParameter("exportPeriod"));
+        Settings.put("importPeriod", req.getParameter("importPeriod"));
+        Settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
     }
 
     private void redirectToLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {

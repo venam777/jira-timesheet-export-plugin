@@ -1,4 +1,5 @@
 #requireResource("com.bftcom.jira-timesheet-export-plugin:jira-timesheet-export-plugin-resources")
+##todo i18n
 <html>
 <head>
     <title>XProduct Admin</title>
@@ -15,6 +16,7 @@
                 <h2>Настройки плагина</h2>
             </div>
             <div class="aui-page-header-actions">
+                <input type="submit" id="save" name="submitButton" value="Сохранить">
                 <input type="submit" id="startAuto" name="submitButton" value="Запустить">
                 <input type="submit" id="stopAuto" name="submitButton" value="Остановить">
                 <input type="submit" id="executeManualy" name="submitButton" value="Выполнить в ручном режиме">
@@ -31,22 +33,22 @@
                 <input type="radio" id="manualExportMode" name="exportType" value="manual" onchange="setExportMode(false)">Вручную
             </td>
         </tr>
-##        <tr>
-##            <td>Директория экспорта:</td>
-##            <td><input type="text" id="exportDir" name="exportDir" value=$exportDir></td>
-##        </tr>
-##        <tr>
-##            <td>Директория импорта:</td>
-##            <td><input type="text" id="importDir" name="importDir" value=$importDir></td>
-##        </tr>
-##        <tr>
-##            <td>Периодичность экспорта, в часах:</td>
-##            <td><input type="number" id="exportPeriod" name="exportPeriod" value=$exportPeriod step="0.1"></td>
-##        </tr>
-##        <tr>
-##            <td>Периодичность импорта, в часах:</td>
-##            <td><input type="number" id="importPeriod" name="importPeriod" value=$importPeriod step="0.1"></td>
-##        </tr>
+        <tr>
+            <td>Директория экспорта:</td>
+            <td><input type="text" id="exportDir" name="exportDir" value=$exportDir></td>
+        </tr>
+        <tr>
+            <td>Директория импорта:</td>
+            <td><input type="text" id="importDir" name="importDir" value=$importDir></td>
+        </tr>
+        <tr>
+            <td>Периодичность экспорта, в часах:</td>
+            <td><input type="number" id="exportPeriod" name="exportPeriod" value=$exportPeriod step="0.1"></td>
+        </tr>
+        <tr>
+            <td>Периодичность импорта, в часах:</td>
+            <td><input type="number" id="importPeriod" name="importPeriod" value=$importPeriod step="0.1"></td>
+        </tr>
         <tr>
             <td>Начальная дата:</td>
             <td><input type="date" id="startDate" name="startDate" value=$startDate></td>
@@ -64,6 +66,22 @@
                     #end
                 </select>
             </td>
+        </tr>
+        <tr>
+            <td>Последний запуск, экспорт:</td>
+            <td><label>$lastRunDateExport</label></td>
+        </tr>
+        <tr>
+            <td>Сообщение последнего запуска, экспорт:</td>
+            <td><label>$lastRunMessageExport</label></td>
+        </tr>
+        <tr>
+            <td>Последний запуск, импорт:</td>
+            <td><label>$lastRunDateImport</label></td>
+        </tr>
+        <tr>
+            <td>Сообщение последнего запуска, импорт:</td>
+            <td><label>$lastRunMessageImport</label></td>
         </tr>
     </table>
 ##    таблица
