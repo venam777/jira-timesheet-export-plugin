@@ -3,8 +3,8 @@
         <description>${project.description}</description>
         <version>${project.version}</version>
         <vendor name="${project.organization.name}" url="${project.organization.url}"/>
-        <param name="plugin-icon">images/pluginIcon.png</param>
-        <param name="plugin-logo">images/pluginLogo.png</param>
+        <param name="plugin-icon">images/bftPluginIcon.png</param>
+        <param name="plugin-logo">images/bftPluginLogo.png</param>
         <param name="configure.url">/plugins/servlet/timesheet-export/config</param>
         <!--<bundle-instructions>-->
             <!--<Import-Package>com.atlassian.jira.web.*;resolution:="optional"</Import-Package>-->
