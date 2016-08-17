@@ -62,9 +62,29 @@
             <td>
                 <select name="projects" multiple>
                     #foreach($project in $projects)
-                        <option value=$project>$project</option>
+                        <option value=$project #if ($selectedProjects.contains($project))selected#end>$project</option>
                     #end
                 </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Экспорт работает в автоматическом режиме</td>
+            <td>
+                #if ($exportRunningInAutoMode)
+                  Да
+                #else
+                  Нет
+                #end
+            </td>
+        </tr>
+        <tr>
+            <td>Импорт работает в автоматическом режиме</td>
+            <td>
+                #if ($importRunningInAutoMode)
+                    Да
+                #else
+                    Нет
+                #end
             </td>
         </tr>
         <tr>

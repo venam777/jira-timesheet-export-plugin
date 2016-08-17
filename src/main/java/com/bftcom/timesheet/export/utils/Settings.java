@@ -27,8 +27,10 @@ public class Settings {
     static {
         defaultParams.put("exportPeriod", 60 / 60f);
         defaultParams.put("importPeriod", 30 / 60f);
-        defaultParams.put("exportDir", "//pm/exchange/JIRA/import/");
-        defaultParams.put("importDir", "//pm/exchange/JIRA/proexport/");
+        defaultParams.put("exportDir", "/mnt/pm/import/");
+        defaultParams.put("importDir", "/mnt/pm/proexport/");
+//        defaultParams.put("exportDir", "//pm/exchange/JIRA/import/");
+//        defaultParams.put("importDir", "//pm/exchange/JIRA/proexport/");
         defaultParams.put("projects", "[]");
     }
 

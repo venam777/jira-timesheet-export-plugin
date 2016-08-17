@@ -33,6 +33,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import java.io.IOException;
 import java.util.*;
 
 
@@ -119,7 +120,7 @@ public class EntryPoint {
         WorklogExportParams exportParams = new WorklogExportParams(event.startDate, event.endDate).projects(projects);
         try {
             WorklogExporter.getInstance().exportWorklog(exportParams);
-        } catch (TransformerException | ParserConfigurationException e) {
+        } catch (TransformerException | ParserConfigurationException | IOException e) {
             e.printStackTrace();
         }
     }

@@ -42,6 +42,7 @@ public class Parser {
 
     public static String[] parseArray(String mass) {
         if (mass == null || mass.equals("") || mass.equals("null")) return new String[0];
+        mass = mass.replaceAll(", ", ",");
         return mass.substring(mass.indexOf('[') + 1, mass.lastIndexOf(']')).split(",");
     }
 

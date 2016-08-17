@@ -10,7 +10,9 @@ import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.scheduler.SchedulerHistoryService;
+import com.atlassian.scheduler.SchedulerService;
 import com.atlassian.scheduler.config.JobId;
+import com.atlassian.scheduler.status.JobDetails;
 import com.atlassian.scheduler.status.RunDetails;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.bftcom.timesheet.export.events.AutoExportStartEvent;
@@ -103,6 +105,12 @@ public class AdminServlet extends HttpServlet {
         });
         Collections.sort(projectNames);
         params.put("projects", projectNames);
+        String[] selectedProjects = Parser.parseArray(Settings.get("projects"));
+        params.put("selectedProjects", Arrays.asList(selectedProjects));
+        JobDetails exportDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerService.class).getJobDetails(JobId.of(Settings.exportJobId));
+        JobDetails importDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerService.class).getJobDetails(JobId.of(Settings.importJobId));
+        params.put("exportRunningInAutoMode", exportDetails != null && exportDetails.getNextRunTime() != null);
+        params.put("importRunningInAutoMode", importDetails != null && importDetails.getNextRunTime() != null);
         //todo default param?
         //params.put("exportType", Settings.get("exportType"));
         logger.debug("form parametrs : " + params);

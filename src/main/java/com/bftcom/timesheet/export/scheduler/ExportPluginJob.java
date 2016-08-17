@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -35,7 +36,7 @@ public class ExportPluginJob implements JobRunner {
             logger.debug("export job started, start time = " + request.getStartTime()
                     + ", parameters = " + request.getJobConfig().getParameters());
             WorklogExporter.getInstance().exportWorklog(callback.call(), Settings.getExportFileName());
-        } catch (TransformerException | ParserConfigurationException e) {
+        } catch (TransformerException | ParserConfigurationException | IOException e) {
             e.printStackTrace();
             e.printStackTrace();
             StringWriter sw = new StringWriter();

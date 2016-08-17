@@ -2,6 +2,8 @@ package com.bftcom.timesheet.export;
 
 import com.atlassian.jira.bc.issue.worklog.DeletedWorklog;
 import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.customfields.option.LazyLoadedOption;
+import com.atlassian.jira.issue.customfields.option.Option;
 import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.issue.worklog.WorklogManager;
@@ -22,6 +24,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -42,11 +45,11 @@ public class WorklogExporter {
         manager = ComponentAccessor.getWorklogManager();
     }
 
-    public void exportWorklog(WorklogExportParams params) throws TransformerException, ParserConfigurationException {
+    public void exportWorklog(WorklogExportParams params) throws TransformerException, ParserConfigurationException, IOException {
         exportWorklog(params, Settings.getExportFileName());
     }
 
-    public void exportWorklog(WorklogExportParams params, String fileNameWithPath) throws TransformerException, ParserConfigurationException {
+    public void exportWorklog(WorklogExportParams params, String fileNameWithPath) throws TransformerException, ParserConfigurationException, IOException {
         logger.debug("Worklog export started");
         Collection<Worklog> updatedWorklogs = getUpdatedWorklogs(params);
         logger.debug("updated worklogs count to xml = " + updatedWorklogs.size());
@@ -79,16 +82,23 @@ public class WorklogExporter {
             addAttribute(doc, timesheet, "REMARK", Parser.parseWorklogComment(worklog.getComment()));
             addAttribute(doc, timesheet, "WORKDATE", Settings.dateFormat.format(worklog.getStartDate()));
             addAttribute(doc, timesheet, "PROJECTID", worklog.getIssue().getProjectObject().getId().toString());
+            addAttribute(doc, timesheet, "LDAPID", "BFT\\" + worklog.getAuthorObject().getUsername());
             logger.debug("worklog params: id = " + worklog.getId() + ", issue.id = " + worklog.getIssue().getId()
                     + ", amount = " + amount + ", comment = " + worklog.getComment() + ", workdate = " + Settings.dateFormat.format(worklog.getStartDate())
                     + ", project.id = " + worklog.getIssue().getProjectObject().getId().toString());
             CustomField f = ComponentAccessor.getCustomFieldManager().getCustomFieldObject(financeProjectFieldId);
             if (f != null) {
-                String financeProjectName = (String) worklog.getIssue().getCustomFieldValue(f);
-                if (financeProjectName != null && !financeProjectName.equals("")) {
-                    String financeProjectId = financeProjectName.substring(financeProjectName.lastIndexOf('#') + 1);
-                    addAttribute(doc, timesheet, "FINPROJECT_ID", financeProjectId);
-                    logger.debug("worklog finance_project.id = " + financeProjectId);
+                Option option = (Option) worklog.getIssue().getCustomFieldValue(f);
+                if (option != null) {
+                    String financeProjectName = option.getValue();
+                    if (financeProjectName == null) {
+                        financeProjectName = option.toString();
+                    }
+                    if (financeProjectName != null && !financeProjectName.equals("")) {
+                        String financeProjectId = financeProjectName.substring(financeProjectName.lastIndexOf('#') + 1);
+                        addAttribute(doc, timesheet, "FINPROJECT_ID", financeProjectId);
+                        logger.debug("worklog finance_project.id = " + financeProjectId);
+                    }
                 }
             }
             WorklogData info = dao.get(worklog.getId(), true);
@@ -115,8 +125,14 @@ public class WorklogExporter {
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 
         DOMSource source = new DOMSource(doc);
-        StreamResult result = new StreamResult(new File(fileNameWithPath));
-
+        logger.debug("Export file path: " + fileNameWithPath);
+        String fileName = fileNameWithPath.substring(fileNameWithPath.lastIndexOf('/') + 1);
+        String path = fileNameWithPath.substring(0, fileNameWithPath.lastIndexOf('/'));
+        logger.debug("file directory: " + path);
+        logger.debug("file name : " + fileName);
+        File file = new File(path, fileName);
+        file.createNewFile();
+        StreamResult result = new StreamResult(file);
         transformer.transform(source, result);
 
         logger.debug("export finished successfully");
