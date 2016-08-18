@@ -1,5 +1,7 @@
 package com.bftcom.timesheet.export.utils;
 
+import com.bftcom.timesheet.export.entity.WorklogData;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,8 +49,16 @@ public class Parser {
     }
 
     public static String parseWorklogComment(String dirtyComment) {
-        if (dirtyComment.startsWith("{panel:title") && dirtyComment.endsWith("{panel}")) {
-            return dirtyComment.substring(dirtyComment.indexOf("}") + 1, dirtyComment.lastIndexOf("{"));
+        String prefix = "| Статус: ";
+        String status1 = prefix + WorklogData.NOT_VIEWED_STATUS;
+        String status2 = prefix + WorklogData.APPROVED_STATUS;
+        String status3 = prefix + WorklogData.REJECTED_STATUS;
+        if (dirtyComment.endsWith(status1) ) {
+            return dirtyComment.substring(0, dirtyComment.indexOf(status1));
+        } else if (dirtyComment.endsWith(status2)) {
+            return dirtyComment.substring(0, dirtyComment.indexOf(status2));
+        } else if (dirtyComment.contains(status3)) {//contains не ошибка: если статус отклонено, то после статуса может идти причина отклонения
+            return dirtyComment.substring(0, dirtyComment.indexOf(status3));
         }
         return dirtyComment;
     }

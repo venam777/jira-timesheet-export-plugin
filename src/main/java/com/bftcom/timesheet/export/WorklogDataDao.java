@@ -4,26 +4,19 @@ package com.bftcom.timesheet.export;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.bc.JiraServiceContext;
 import com.atlassian.jira.bc.JiraServiceContextImpl;
-import com.atlassian.jira.bc.issue.visibility.GroupVisibility;
 import com.atlassian.jira.bc.issue.worklog.WorklogInputParameters;
 import com.atlassian.jira.bc.issue.worklog.WorklogInputParametersImpl;
 import com.atlassian.jira.bc.issue.worklog.WorklogResult;
 import com.atlassian.jira.bc.issue.worklog.WorklogService;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.worklog.Worklog;
-import com.atlassian.jira.issue.worklog.WorklogManager;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.util.JiraDurationUtils;
-import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.bftcom.timesheet.export.entity.WorklogData;
-import com.bftcom.timesheet.export.entity.WorklogDataStyle;
 import com.bftcom.timesheet.export.utils.Parser;
 import net.java.ao.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
-import javax.inject.Inject;
 
 //@Component
 public class WorklogDataDao {
@@ -137,15 +130,16 @@ public class WorklogDataDao {
         if (worklog == null) return;
         WorklogData worklogData = get(worklogId, false);
         if (worklogData == null) return;
-        String title = worklogData.getStatus();
+        String title = " | Статус: " + worklogData.getStatus();
         if (title.equals(WorklogData.REJECTED_STATUS) && worklogData.getRejectComment() != null && !worklogData.getRejectComment().equals("")) {
-            title += " : " + worklogData.getRejectComment();
+            title += ", причина: " + worklogData.getRejectComment();
         }
         String comment = Parser.parseWorklogComment(worklog.getComment());
-        WorklogDataStyle.Color color = WorklogDataStyle.style.get(worklogData.getStatus());
+        comment = comment + title;
+        /*WorklogDataStyle.Color color = WorklogDataStyle.style.get(worklogData.getStatus());
         comment = "{panel:title=" + title + "|borderStyle=solid|borderColor="
                 + color.borderColor + "|titleBGColor=" + color.titleColor + "|bgColor=" + color.backgroundColor + "}"
-                + comment + "{panel}";
+                + comment + "{panel}";*/
         WorklogService worklogService = ComponentAccessor.getComponent(WorklogService.class);
         ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
         if (user == null) {

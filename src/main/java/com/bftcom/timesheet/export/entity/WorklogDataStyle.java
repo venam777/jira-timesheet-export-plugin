@@ -3,6 +3,7 @@ package com.bftcom.timesheet.export.entity;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class WorklogDataStyle {
 
     public static class Color {

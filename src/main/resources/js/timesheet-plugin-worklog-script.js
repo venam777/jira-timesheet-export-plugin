@@ -21,8 +21,9 @@ window.onload = function(event) {
     if (oldfunc) {
         oldfunc(event);
     }
+   customizeWorklogsStyle();
    window.setInterval(function() {
-       disableButtons($('div[id^="worklog-"]'));
+       customizeWorklogsStyle();
    }, 1000);
 };
 
@@ -44,11 +45,29 @@ window.onload = function(event) {
     observer.observe(document.body, {childList: true,  subtree: true});
 }*/
 
+function customizeWorklogsStyle() {
+    $('div[id^="worklog-"]').each(function(){
+        disableButtons($(this));
+        colorizeWorklogs($(this));
+    });
+}
+
 function disableButtons(node) {
     $(node).hover(function () {
-        if ($(this).find('.panelHeader').text().search(/^Утверждено/) != -1) {
+        if ($(this).find('p').text().search(/.*\| Статус: Утверждено/) != -1) {
             $(this).find('.edit-worklog-trigger').css('display', 'none');
             $(this).find('.delete-worklog-trigger').css('display', 'none');
         }
     });
+}
+
+function colorizeWorklogs(node) {
+    var text = $(node).find('p').text();
+    if (text.search(/.*\| Статус: Утверждено/) != -1) {
+        $(node).find('.item-details').css('background-color', '#BADBAD');
+    } else if (text.search(/.*\| Статус: Не просмотрено/) != -1) {
+        $(node).find('.item-details').css('background-color', '#E0DDDD');
+    } else if (text.search(/.*\| Статус: Отклонено.*/) != -1) {
+        $(node).find('.item-details').css('background-color', '#F36D6D');
+    }
 }
