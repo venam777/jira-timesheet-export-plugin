@@ -39,14 +39,14 @@
     <webwork1 key="timesheet-plugin-update-worklog2" name="Updating worklog" class="java.lang.Object">
         <actions>
             <action name="com.bftcom.timesheet.export.CustomUpdateWorklog" alias="UpdateWorklog">
-                <view name="error">/secure/views/issue/logwork.jsp</view>
-                <view name="input">/secure/views/issue/logwork.jsp</view>
-                <view name="securitybreach">/secure/views/securitybreach.jsp</view>
+                <!--<view name="error">/secure/views/issue/logwork.jsp</view>-->
+                <!--<view name="input">/secure/views/issue/logwork.jsp</view>-->
+                <!--<view name="securitybreach">/secure/views/securitybreach.jsp</view>-->
             </action>
             <action name="com.bftcom.timesheet.export.CustomUpdateWorklog" alias="CustomUpdateWorklog">
-                <view name="error">/secure/views/issue/logwork.jsp</view>
-                <view name="input">/secure/views/issue/logwork.jsp</view>
-                <view name="securitybreach">/secure/views/securitybreach.jsp</view>
+                <!--<view name="error">/secure/views/issue/logwork.jsp</view>-->
+                <!--<view name="input">/secure/views/issue/logwork.jsp</view>-->
+                <!--<view name="securitybreach">/secure/views/securitybreach.jsp</view>-->
             </action>
         </actions>
     </webwork1>

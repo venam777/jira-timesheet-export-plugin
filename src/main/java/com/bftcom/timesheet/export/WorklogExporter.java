@@ -60,10 +60,18 @@ public class WorklogExporter {
 
         // root elements
         Document doc = docBuilder.newDocument();
-        Element rootElement = doc.createElement("BODY");
-        doc.appendChild(rootElement);
+
+        Element msgElement = doc.createElement("MSG");
+        doc.appendChild(msgElement);
+
+        Element bodyElement = doc.createElement("BODY");
+        msgElement.appendChild(bodyElement);
+
+        Element rplElement = doc.createElement("RPL");
+        bodyElement.appendChild(rplElement);
+
         Element timesheetRootElement = doc.createElement("TIMESHEET");
-        rootElement.appendChild(timesheetRootElement);
+        rplElement.appendChild(timesheetRootElement);
 
         Element updatedTimesheets = doc.createElement("CHANGED");
         timesheetRootElement.appendChild(updatedTimesheets);
