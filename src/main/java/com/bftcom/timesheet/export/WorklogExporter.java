@@ -2,11 +2,11 @@ package com.bftcom.timesheet.export;
 
 import com.atlassian.jira.bc.issue.worklog.DeletedWorklog;
 import com.atlassian.jira.component.ComponentAccessor;
-import com.atlassian.jira.issue.customfields.option.LazyLoadedOption;
 import com.atlassian.jira.issue.customfields.option.Option;
 import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.issue.worklog.WorklogManager;
+import com.atlassian.jira.issue.worklog.WorklogStore;
 import com.atlassian.jira.project.Project;
 import com.bftcom.timesheet.export.entity.WorklogData;
 import com.bftcom.timesheet.export.utils.Parser;
@@ -25,9 +25,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -147,17 +147,28 @@ public class WorklogExporter {
     }
 
     private Collection<Worklog> getUpdatedWorklogs(WorklogExportParams exportParams) {
+        logger.debug("getUpdatedWorklogs started");
         Date dateFrom = new Date();
         if (exportParams.getStartDate() != null) {
             dateFrom = exportParams.getStartDate();
         }
         logger.debug("start date = " + dateFrom);
-        List<Worklog> worklogList = manager.getWorklogsUpdatedSince(dateFrom.getTime());
+        WorklogStore worklogStore = getWorklogStore();
+        if (worklogStore == null) {
+            logger.error("worklog store is null!");
+            return Collections.emptyList();
+        }
+        List<Worklog> worklogList = worklogStore.getWorklogsUpdateSince(dateFrom.getTime(), Integer.MAX_VALUE);
         logger.debug("since " + dateFrom + " was updated " + worklogList.size() + " worklogs");
+        for (Worklog w : worklogList) {
+            logger.debug("id : " + w.getId() + ", issue = " + w.getIssue().getKey());
+        }
         //статусы
         worklogList.removeIf(w -> !dao.isWorklogExportable(w));
         //проекты
         if (exportParams.getProjects() != null && exportParams.getProjects().size() > 0) {
+            logger.debug("Filter worklogs by projects");
+            logger.debug("Projects: " + exportParams.getProjects());
             worklogList.removeIf(w -> {
                 for (Project p : exportParams.getProjects()) {
                     if (w.getIssue().getProjectId().equals(p.getId())) {
@@ -186,7 +197,12 @@ public class WorklogExporter {
             dateFrom = exportParams.getStartDate();
         }
         final Date dateTo = exportParams.getEndDate() != null ? exportParams.getEndDate() : new Date();
-        List<DeletedWorklog> worklogList = manager.getWorklogsDeletedSince(dateFrom.getTime());
+        WorklogStore store = getWorklogStore();
+        if (store == null) {
+            logger.error("worklog store is null!");
+            return Collections.emptyList();
+        }
+        List<DeletedWorklog> worklogList = store.getWorklogsDeletedSince(dateFrom.getTime(), Integer.MAX_VALUE);
         worklogList.removeIf(w -> w.getDeletionTime().after(dateTo));
         return worklogList;
     }
@@ -195,6 +211,19 @@ public class WorklogExporter {
         Attr attr = doc.createAttribute(name);
         attr.setValue(value);
         element.setAttributeNode(attr);
+    }
+
+    private WorklogStore getWorklogStore() {
+        if (manager == null) return null;
+        Field field;
+        try {
+            field = manager.getClass().getDeclaredField("worklogStore");
+            field.setAccessible(true);
+            return (WorklogStore) field.get(manager);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public synchronized static void createInstance(WorklogDataDao dao) {

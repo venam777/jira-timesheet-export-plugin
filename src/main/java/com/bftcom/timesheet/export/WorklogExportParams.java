@@ -25,25 +25,25 @@ public class WorklogExportParams {
         this.endDate = endDate;
     }
 
-    public WorklogExportParams projects(Collection<String> projectKeys) {
-        if (projectKeys == null) {
+    public WorklogExportParams projects(Collection<String> projectNames) {
+        if (projectNames == null) {
             this.projects = Collections.emptyList();
         } else {
-            this.projects = transformProjects((String[]) projectKeys.toArray());
+            this.projects = transformProjects((String[]) projectNames.toArray());
         }
         return this;
     }
 
-    public WorklogExportParams projects(String... projectKeys) {
-        this.projects = transformProjects(projectKeys);
+    public WorklogExportParams projects(String... projectNames) {
+        this.projects = transformProjects(projectNames);
         return this;
     }
 
-    protected Collection<Project> transformProjects(String... projectKeys) {
+    protected Collection<Project> transformProjects(String... projectNames) {
         ProjectManager projectManager = ComponentAccessor.getProjectManager();
         List<Project> projectList = new ArrayList<>();
-        for (String key : projectKeys) {
-            Project project = projectManager.getProjectByCurrentKeyIgnoreCase(key);
+        for (String name : projectNames) {
+            Project project = projectManager.getProjectObjByName(name);
             if (project != null) {
                 projectList.add(project);
             }

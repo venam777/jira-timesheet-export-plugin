@@ -115,8 +115,10 @@ public class EntryPoint {
 
     @EventListener
     public void onManualExportStartEvent(ManualExportStartEvent event) {
+        logger.debug("onManualExportStartEvent started");
         checkComponents();
         String[] projects = Parser.parseArray(Settings.get("projects"));
+        logger.debug("projects = " + Arrays.toString(projects));
         WorklogExportParams exportParams = new WorklogExportParams(event.startDate, event.endDate).projects(projects);
         try {
             WorklogExporter.getInstance().exportWorklog(exportParams);
