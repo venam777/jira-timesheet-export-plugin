@@ -72,6 +72,7 @@ public class WorklogExporter {
 
         Element timesheetRootElement = doc.createElement("TIMESHEET");
         rplElement.appendChild(timesheetRootElement);
+        addAttribute(doc, timesheetRootElement, "RPL_OBJ_NAME", "TIMESHEET");
 
         Element updatedTimesheets = doc.createElement("CHANGED");
         timesheetRootElement.appendChild(updatedTimesheets);
