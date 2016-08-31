@@ -2,6 +2,8 @@ package com.bftcom.timesheet.export;
 
 import com.atlassian.jira.bc.issue.worklog.DeletedWorklog;
 import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.customfields.option.Option;
 import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.worklog.Worklog;
@@ -26,15 +28,13 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class WorklogExporter {
 
     private WorklogManager manager;
     private WorklogDataDao dao;
+    private CustomField financeProjectField;
 
     private Long financeProjectFieldId = 12500L;
     private static WorklogExporter instance;
@@ -43,6 +43,7 @@ public class WorklogExporter {
     private WorklogExporter(WorklogDataDao dao) {
         this.dao = dao;
         manager = ComponentAccessor.getWorklogManager();
+        financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObject(financeProjectFieldId);
     }
 
     public void exportWorklog(WorklogExportParams params) throws TransformerException, ParserConfigurationException, IOException {
@@ -70,6 +71,24 @@ public class WorklogExporter {
         Element rplElement = doc.createElement("RPL");
         bodyElement.appendChild(rplElement);
 
+        //fill issue information
+        Collection<Issue> issues = getWorklogIssues(updatedWorklogs);
+        Element issueRootElement = doc.createElement("CONTROL");
+        rplElement.appendChild(issueRootElement);
+        addAttribute(doc, issueRootElement, "RPL_OBJ_NAME", "CONTROL");
+        Element updatedIssues = doc.createElement("CHANGED");
+        issueRootElement.appendChild(updatedIssues);
+        for (Issue issue : issues) {
+            Element control = doc.createElement("CONTROL");
+            addAttribute(doc, control, "ID", issue.getKey());
+            addAttribute(doc, control, "CAPTION", issue.getKey() + " " + issue.getSummary());
+            String finProjectId = getFinanceProjectId(issue);
+            if (finProjectId != null) {
+                addAttribute(doc, control, "FINPROJECTID", finProjectId);
+            }
+            updatedIssues.appendChild(control);
+        }
+
         Element timesheetRootElement = doc.createElement("TIMESHEET");
         rplElement.appendChild(timesheetRootElement);
         addAttribute(doc, timesheetRootElement, "RPL_OBJ_NAME", "TIMESHEET");
@@ -85,6 +104,7 @@ public class WorklogExporter {
             logger.debug("writing updated worklog in xml");
             addAttribute(doc, timesheet, "ID", worklog.getId().toString());
             addAttribute(doc, timesheet, "ISSUE_ID", worklog.getIssue().getId().toString());
+            addAttribute(doc, timesheet, "CONTROLID", worklog.getIssue().getKey());
             Double spentTimeHours = (double) worklog.getTimeSpent() / 60 / 60;
             String amount = String.valueOf((double) Math.round(spentTimeHours * 100) / 100);
             addAttribute(doc, timesheet, "AMOUNT", amount);
@@ -95,21 +115,12 @@ public class WorklogExporter {
             logger.debug("worklog params: id = " + worklog.getId() + ", issue.id = " + worklog.getIssue().getId()
                     + ", amount = " + amount + ", comment = " + worklog.getComment() + ", workdate = " + Settings.dateFormat.format(worklog.getStartDate())
                     + ", project.id = " + worklog.getIssue().getProjectObject().getId().toString());
-            CustomField f = ComponentAccessor.getCustomFieldManager().getCustomFieldObject(financeProjectFieldId);
-            if (f != null) {
-                Option option = (Option) worklog.getIssue().getCustomFieldValue(f);
-                if (option != null) {
-                    String financeProjectName = option.getValue();
-                    if (financeProjectName == null) {
-                        financeProjectName = option.toString();
-                    }
-                    if (financeProjectName != null && !financeProjectName.equals("")) {
-                        String financeProjectId = financeProjectName.substring(financeProjectName.lastIndexOf('#') + 1);
-                        addAttribute(doc, timesheet, "FINPROJECT_ID", financeProjectId);
-                        logger.debug("worklog finance_project.id = " + financeProjectId);
-                    }
-                }
+            String financeProjectId = getFinanceProjectId(worklog.getIssue());
+            if (financeProjectId != null) {
+                addAttribute(doc, timesheet, "FINPROJECTID", financeProjectId);
+                logger.debug("worklog finance_project.id = " + financeProjectId);
             }
+
             WorklogData info = dao.get(worklog.getId(), true);
             addAttribute(doc, timesheet, "REJECT_COMMENT", info.getRejectComment());
             addAttribute(doc, timesheet, "STATUS", info.getStatus());
@@ -145,6 +156,22 @@ public class WorklogExporter {
         transformer.transform(source, result);
 
         logger.debug("export finished successfully");
+    }
+
+    private String getFinanceProjectId(Issue issue) {
+        if (financeProjectField != null) {
+            Option option = (Option) issue.getCustomFieldValue(financeProjectField);
+            if (option != null) {
+                String financeProjectName = option.getValue();
+                if (financeProjectName == null) {
+                    financeProjectName = option.toString();
+                }
+                if (financeProjectName != null && !financeProjectName.equals("")) {
+                    return financeProjectName.substring(financeProjectName.lastIndexOf('#') + 1);
+                }
+            }
+        }
+        return null;
     }
 
     private Collection<Worklog> getUpdatedWorklogs(WorklogExportParams exportParams) {
@@ -190,6 +217,22 @@ public class WorklogExporter {
         //задачи
         //ид-шники worklog
         return worklogList;
+    }
+
+    private Collection<Issue> getWorklogIssues(Collection<Worklog> worklogs) {
+        Set<String> issueKeys = new HashSet<>();
+        for (Worklog w : worklogs) {
+            Issue issue = w.getIssue();
+            if (issue != null) {
+                issueKeys.add(issue.getKey());
+            }
+        }
+        Collection<Issue> result = new ArrayList<>();
+        IssueManager issueManager = ComponentAccessor.getIssueManager();
+        for (String key : issueKeys) {
+            result.add(issueManager.getIssueByCurrentKey(key));
+        }
+        return result;
     }
 
     private Collection<DeletedWorklog> getDeletedWorklogs(WorklogExportParams exportParams) {
