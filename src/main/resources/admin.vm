@@ -59,9 +59,13 @@
             <td><input type="date" id="endDate" name="endDate" value=$endDate></td>
         </tr>
         <tr>
+            <td>Выгружать по всем проектам:</td>
+            <td><input name="includeAllProjects" id="includeAllProjects" type="checkbox" #if($includeAllProjects) checked #end onchange="setIncludeAllProjects(this.checked)" style="width: 15px"></td>
+        </tr>
+        <tr>
             <td>Проекты:</td>
             <td>
-                <select name="projects" multiple>
+                <select name="projects" id="projects" multiple #if($includeAllProjects) disabled #end>
                     #foreach($project in $projects)
                         <option value='$project' #if ($selectedProjects.contains($project))selected#end>$project</option>
                     #end

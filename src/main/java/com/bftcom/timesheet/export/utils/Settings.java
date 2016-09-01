@@ -31,6 +31,7 @@ public class Settings {
         defaultParams.put("importDir", "/mnt/pm/proexport/");
 //        defaultParams.put("exportDir", "//pm/exchange/JIRA/import/");
 //        defaultParams.put("importDir", "//pm/exchange/JIRA/proexport/");
+        defaultParams.put("includeAllProjects", false);
         defaultParams.put("projects", "[]");
     }
 

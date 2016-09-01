@@ -50,7 +50,7 @@ public class CustomUpdateWorklog extends UpdateWorklog {
     @Override
     protected String doExecute() throws Exception {
         String result = super.doExecute();
-        WorklogDataDao.getInstance().setWorklogStatus(getWorklogId(), WorklogData.NOT_VIEWED_STATUS);
+        WorklogDataDao.getInstance().setWorklogStatus(getWorklogId(), WorklogData.NOT_VIEWED_STATUS, "");
         return result;
     }
 }

@@ -89,6 +89,7 @@ public class AdminServlet extends HttpServlet {
         params.put("importPeriod", Settings.get("importPeriod"));
         params.put("exportDir", Settings.get("exportDir"));
         params.put("importDir", Settings.get("importDir"));
+        params.put("includeAllProjects", Settings.get("includeAllProjects"));
 
         RunDetails lastRunExportDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class).getLastRunForJob(JobId.of(Settings.exportJobId));
         params.put("lastRunDateExport", lastRunExportDetails != null ? Settings.dateTimeFormat.format(lastRunExportDetails.getStartTime()) : "");
@@ -162,6 +163,7 @@ public class AdminServlet extends HttpServlet {
         Settings.put("importDir", req.getParameter("importDir"));
         Settings.put("exportPeriod", req.getParameter("exportPeriod"));
         Settings.put("importPeriod", req.getParameter("importPeriod"));
+        Settings.put("includeAllProjects", req.getParameter("includeAllProjects"));
         Settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
     }
 

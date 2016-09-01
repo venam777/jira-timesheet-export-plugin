@@ -14,7 +14,7 @@
         <url>http://www.bftcom.com/</url>
     </organization>
 
-    <name>jira-timesheet-export-plugin</name>
+    <name>Jira Worklog Export Plugin</name>
     <description>This is the com.bftcom:jira-timesheet-export-plugin plugin for Atlassian JIRA.</description>
     <!--<packaging>jar</packaging>-->
     <packaging>atlassian-plugin</packaging>

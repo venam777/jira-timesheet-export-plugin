@@ -31,7 +31,7 @@ public class WorklogEventListener {
     public void onWorklogUpdated(Worklog worklog) {
         String status = dao.getWorklogStatus(worklog.getId());
         if (status.equals(WorklogData.REJECTED_STATUS)) {
-            dao.setWorklogStatus(worklog.getId(), WorklogData.NOT_VIEWED_STATUS);
+            dao.setWorklogStatus(worklog.getId(), WorklogData.NOT_VIEWED_STATUS, "");
         }
     }
 

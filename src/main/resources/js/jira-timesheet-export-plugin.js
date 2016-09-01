@@ -12,3 +12,7 @@ function setExportMode(isAutoMode) {
 window.onload = function () {
     setExportMode(true)
 };
+
+function setIncludeAllProjects(includeAllProjects) {
+   document.getElementById("projects").disabled = includeAllProjects;
+}

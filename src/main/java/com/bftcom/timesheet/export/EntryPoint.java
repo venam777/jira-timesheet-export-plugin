@@ -89,11 +89,10 @@ public class EntryPoint {
             @Override
             public WorklogExportParams call() {
                 RunDetails details = historyService.getLastSuccessfulRunForJob(JobId.of(Settings.exportJobId));
-                String[] projects = Parser.parseArray(Settings.get("projects"));
                 if (details == null) {
-                    return new WorklogExportParams(Settings.getStartOfCurrentMonth(), Settings.getEndOfCurrentMonth()).projects(projects);
+                    return new WorklogExportParams(Settings.getStartOfCurrentMonth(), Settings.getEndOfCurrentMonth()).projects(getProjectsFromSettings());
                 }
-                return new WorklogExportParams(details.getStartTime(), Settings.getEndOfCurrentMonth()).projects(projects);
+                return new WorklogExportParams(details.getStartTime(), Settings.getEndOfCurrentMonth()).projects(getProjectsFromSettings());
             }
         }));
         schedulerService.registerJobRunner(JobRunnerKey.of(Settings.importJobKey), new ImportPluginJob());
@@ -117,8 +116,8 @@ public class EntryPoint {
     public void onManualExportStartEvent(ManualExportStartEvent event) {
         logger.debug("onManualExportStartEvent started");
         checkComponents();
-        String[] projects = Parser.parseArray(Settings.get("projects"));
-        logger.debug("projects = " + Arrays.toString(projects));
+        Collection<String> projects = getProjectsFromSettings();
+        logger.debug("projects = " + projects);
         WorklogExportParams exportParams = new WorklogExportParams(event.startDate, event.endDate).projects(projects);
         try {
             WorklogExporter.getInstance().exportWorklog(exportParams);
@@ -159,6 +158,13 @@ public class EntryPoint {
 
     private boolean checkPluginByName(String pluginName) {
         return pluginName.equals("jira-timesheet-export-plugin");
+    }
+
+    private Collection<String> getProjectsFromSettings() {
+        boolean includeAllProjects = Settings.get("includeAllProjects");
+        logger.debug("includeAllProjects = " + includeAllProjects);
+        List<String> projects = includeAllProjects ? Collections.emptyList() : Arrays.asList(Parser.parseArray(Settings.get("projects")));
+        return projects;
     }
 
     @EventListener

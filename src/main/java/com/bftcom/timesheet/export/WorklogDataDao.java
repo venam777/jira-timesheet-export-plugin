@@ -63,11 +63,14 @@ public class WorklogDataDao {
         return data != null ? data.getStatus() : "";
     }
 
-    public synchronized void setWorklogStatus(Long worklogId, String status) {
+    public synchronized void setWorklogStatus(Long worklogId, String status, String rejectComment) {
         logger.debug("set worklog status, status = " + status + ", worklogId = " + worklogId);
         activeObjects.executeInTransaction(() -> {
             WorklogData data = get(worklogId, true);
             data.setStatus(status);
+            if (rejectComment != null) {
+                data.setRejectComment(rejectComment);
+            }
             data.save();
             onWorklogStatusChanged(worklogId);
             return data;
@@ -85,16 +88,7 @@ public class WorklogDataDao {
             logger.debug("no worklog with id = " + worklogId + " was found, nothing to do");
         }
         logger.debug("updating worklog data, status = " + status + ", rejectComment = " + rejectComment);
-        setWorklogStatus(worklogId, status);
-        if (rejectComment != null) {
-            activeObjects.executeInTransaction(() -> {
-                WorklogData data = get(worklogId, true);
-                data.setRejectComment(rejectComment);
-                data.save();
-                logger.debug("updating was finished");
-                return data;
-            });
-        }
+        setWorklogStatus(worklogId, status, rejectComment);
     }
 
     protected synchronized WorklogData create(Long worklogId) {
@@ -124,27 +118,35 @@ public class WorklogDataDao {
         return null;
     }
 
-    //todo убрать это отсюда!
     protected void onWorklogStatusChanged(Long worklogId) {
+        logger.debug("WorklogDataDao#onWorklogStatusChanged started");
         Worklog worklog = ComponentAccessor.getWorklogManager().getById(worklogId);
-        if (worklog == null) return;
+        if (worklog == null) {
+            logger.error("Worklog with id = " + worklogId + " was not found!");
+            return;
+        }
         WorklogData worklogData = get(worklogId, false);
-        if (worklogData == null) return;
+        if (worklogData == null) {
+            logger.error("WorklogData for worklog with id = " + worklogId + " was not found!");
+            return;
+        }
         String title = " | Статус: " + worklogData.getStatus();
         if (title.equals(WorklogData.REJECTED_STATUS) && worklogData.getRejectComment() != null && !worklogData.getRejectComment().equals("")) {
             title += ", причина: " + worklogData.getRejectComment();
         }
+        logger.debug("new title = " + title);
         String comment = Parser.parseWorklogComment(worklog.getComment());
+        logger.debug("clear worklog comment = " + comment);
         comment = comment + title;
-        /*WorklogDataStyle.Color color = WorklogDataStyle.style.get(worklogData.getStatus());
-        comment = "{panel:title=" + title + "|borderStyle=solid|borderColor="
-                + color.borderColor + "|titleBGColor=" + color.titleColor + "|bgColor=" + color.backgroundColor + "}"
-                + comment + "{panel}";*/
+        logger.debug("new worklog comment = " + comment);
+
         WorklogService worklogService = ComponentAccessor.getComponent(WorklogService.class);
-        ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+        ApplicationUser user = ComponentAccessor.getUserManager().getUserByKey("admin");
         if (user == null) {
-            user = ComponentAccessor.getUserManager().getUserByKey("admin");
+            logger.error("Admin user was not found!");
+            return;
         }
+
         JiraServiceContext serviceContext = new JiraServiceContextImpl(user);
         JiraDurationUtils durationUtils = ComponentAccessor.getJiraDurationUtils();
         WorklogInputParameters parameters = WorklogInputParametersImpl.builder()
@@ -153,7 +155,11 @@ public class WorklogDataDao {
                 .build();
         WorklogResult result = worklogService.validateUpdate(serviceContext, parameters);
         if (result != null) {
+            logger.debug("start updating worklog");
             worklogService.updateAndRetainRemainingEstimate(serviceContext, result, false);
+            logger.debug("finished updating worklog");
+        } else {
+            logger.error("updating is not allowed!");
         }
     }
 }
