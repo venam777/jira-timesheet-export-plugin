@@ -89,7 +89,7 @@ public class AdminServlet extends HttpServlet {
         params.put("importPeriod", Settings.get("importPeriod"));
         params.put("exportDir", Settings.get("exportDir"));
         params.put("importDir", Settings.get("importDir"));
-        params.put("includeAllProjects", Settings.get("includeAllProjects"));
+        params.put("includeAllProjects", Parser.parseBoolean(Settings.get("includeAllProjects"), false));
 
         RunDetails lastRunExportDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class).getLastRunForJob(JobId.of(Settings.exportJobId));
         params.put("lastRunDateExport", lastRunExportDetails != null ? Settings.dateTimeFormat.format(lastRunExportDetails.getStartTime()) : "");
@@ -150,7 +150,8 @@ public class AdminServlet extends HttpServlet {
                 break;
             case "Выполнить в ручном режиме":
                 logger.debug("export type = manual");
-                Settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
+                boolean includeAllProjects = req.getParameterMap().containsKey("includeAllProjects") && req.getParameter("includeAllProjects").equalsIgnoreCase("on");
+                Settings.put("projects", includeAllProjects ? "null" : Arrays.toString(req.getParameterMap().get("projects")));
                 eventPublisher.publish(new ManualExportStartEvent(Parser.parseDate(req.getParameter("startDate"), Settings.getStartOfCurrentMonth()),
                         Parser.parseDate(req.getParameter("endDate"), Settings.getEndOfCurrentMonth())));
                 break;
@@ -163,7 +164,7 @@ public class AdminServlet extends HttpServlet {
         Settings.put("importDir", req.getParameter("importDir"));
         Settings.put("exportPeriod", req.getParameter("exportPeriod"));
         Settings.put("importPeriod", req.getParameter("importPeriod"));
-        Settings.put("includeAllProjects", req.getParameter("includeAllProjects"));
+        Settings.put("includeAllProjects", req.getParameterMap().containsKey("includeAllProjects") && req.getParameter("includeAllProjects").equalsIgnoreCase("on"));
         Settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
     }
 

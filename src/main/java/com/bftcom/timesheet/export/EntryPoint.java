@@ -161,10 +161,9 @@ public class EntryPoint {
     }
 
     private Collection<String> getProjectsFromSettings() {
-        boolean includeAllProjects = Settings.get("includeAllProjects");
+        boolean includeAllProjects = Parser.parseBoolean(Settings.get("includeAllProjects"), false);
         logger.debug("includeAllProjects = " + includeAllProjects);
-        List<String> projects = includeAllProjects ? Collections.emptyList() : Arrays.asList(Parser.parseArray(Settings.get("projects")));
-        return projects;
+        return includeAllProjects ? Collections.emptyList() : Arrays.asList(Parser.parseArray(Settings.get("projects")));
     }
 
     @EventListener

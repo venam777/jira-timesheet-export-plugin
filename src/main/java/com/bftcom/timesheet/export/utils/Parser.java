@@ -63,4 +63,15 @@ public class Parser {
         return dirtyComment;
     }
 
+    public static boolean parseBoolean(Object stringOrBoolean, boolean defaultParam) {
+        if (stringOrBoolean == null || (stringOrBoolean instanceof String && stringOrBoolean.equals(""))) return defaultParam;
+        if (stringOrBoolean instanceof Boolean) {
+            return (boolean) stringOrBoolean;
+        }
+        if (stringOrBoolean instanceof String) {
+            return ((String) stringOrBoolean).equalsIgnoreCase("true");
+        }
+        return defaultParam;
+    }
+
 }

@@ -26,16 +26,11 @@ public class WorklogExportParams {
     }
 
     public WorklogExportParams projects(Collection<String> projectNames) {
-        if (projectNames == null) {
+        if (projectNames == null || projectNames.size() == 0) {
             this.projects = Collections.emptyList();
         } else {
             this.projects = transformProjects((String[]) projectNames.toArray());
         }
-        return this;
-    }
-
-    public WorklogExportParams projects(String... projectNames) {
-        this.projects = transformProjects(projectNames);
         return this;
     }
 
