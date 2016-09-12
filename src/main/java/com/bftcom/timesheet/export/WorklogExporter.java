@@ -10,6 +10,7 @@ import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.issue.worklog.WorklogManager;
 import com.atlassian.jira.issue.worklog.WorklogStore;
 import com.atlassian.jira.project.Project;
+import com.atlassian.jira.user.ApplicationUser;
 import com.bftcom.timesheet.export.entity.WorklogData;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
@@ -212,8 +213,22 @@ public class WorklogExporter {
         if (exportParams.getEndDate() != null) {
             worklogList.removeIf(w -> w.getCreated().after(exportParams.getEndDate()));
         }
-        //бюджеты
         //пользователи
+        if (exportParams.getUsers() != null && exportParams.getUsers().size() > 0) {
+            logger.debug("Filter worklogs by users");
+            logger.debug("Users: " + exportParams.getUsers());
+            worklogList.removeIf(w-> {
+                for (ApplicationUser user : exportParams.getUsers()) {
+                    if (w.getAuthorKey().equals(user.getKey())) {
+                        logger.debug("worklog with id = " + w.getId() + " is correct for user with key = " + user.getKey());
+                        return false;
+                    }
+                }
+                logger.debug("worklog with id = " + w.getComment() + " doesn't match for selected users");
+                return true;
+            });
+        }
+        //бюджеты
         //задачи
         //ид-шники worklog
         return worklogList;

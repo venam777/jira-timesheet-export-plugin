@@ -65,9 +65,23 @@
         <tr>
             <td>Проекты:</td>
             <td>
-                <select name="projects" id="projects" multiple #if($includeAllProjects) disabled #end>
+                <select name="projects" id="projects" multiple #if($includeAllProjects) disabled #end style="height: 200px">
                     #foreach($project in $projects)
                         <option value='$project' #if ($selectedProjects.contains($project))selected#end>$project</option>
+                    #end
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Выгружать по всем пользователям:</td>
+            <td><input name="includeAllUsers" id="includeAllUsers" type="checkbox" #if($includeAllUsers) checked #end onchange="setIncludeAllUsers(this.checked)" style="width: 15px"</td>
+        </tr>
+        <tr>
+            <td>Пользователи:</td>
+            <td>
+                <select name="users" id="users" multiple #if($includeAllUsers) disabled #end style="height: 200px">
+                    #foreach($user in $users)
+                        <option value='$user' #if ($selectedUsers.contains($user))selected#end>$user</option>
                     #end
                 </select>
             </td>

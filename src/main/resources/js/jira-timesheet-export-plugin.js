@@ -16,3 +16,7 @@ window.onload = function () {
 function setIncludeAllProjects(includeAllProjects) {
    document.getElementById("projects").disabled = includeAllProjects;
 }
+
+function setIncludeAllUsers(includeAllUsers) {
+    document.getElementById("users").disabled = includeAllUsers;
+}

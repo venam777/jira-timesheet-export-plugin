@@ -3,6 +3,8 @@ package com.bftcom.timesheet.export;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.util.UserManager;
 
 import java.util.*;
 
@@ -12,11 +14,11 @@ import java.util.*;
 public class WorklogExportParams {
 
     private Collection<Project> projects;
+    private Collection<ApplicationUser> users;
     private Date startDate;
     private Date endDate;
     //todo
     //бюджеты
-    //пользователи
     //задачи
     //ид-шники worklog
 
@@ -34,6 +36,15 @@ public class WorklogExportParams {
         return this;
     }
 
+    public WorklogExportParams users(Collection<String> userNames) {
+        if (userNames == null || userNames.size() == 0) {
+            this.users = Collections.emptyList();
+        } else {
+            this.users = transformUsers((String[]) userNames.toArray());
+        }
+        return this;
+    }
+
     protected Collection<Project> transformProjects(String... projectNames) {
         ProjectManager projectManager = ComponentAccessor.getProjectManager();
         List<Project> projectList = new ArrayList<>();
@@ -46,8 +57,24 @@ public class WorklogExportParams {
         return projectList;
     }
 
+    protected Collection<ApplicationUser> transformUsers(String... userNames) {
+        UserManager userManager = ComponentAccessor.getUserManager();
+        List<ApplicationUser> userList = new ArrayList<>();
+        for (String name : userNames) {
+            ApplicationUser user = userManager.getUserByName(name);
+            if (user != null) {
+                userList.add(user);
+            }
+        }
+        return userList;
+    }
+
     public Collection<Project> getProjects() {
         return projects;
+    }
+
+    public Collection<ApplicationUser> getUsers() {
+        return users;
     }
 
     public Date getStartDate() {

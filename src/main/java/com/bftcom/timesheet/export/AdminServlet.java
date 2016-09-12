@@ -4,6 +4,7 @@ import com.atlassian.event.api.*;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.project.ProjectManager;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.auth.LoginUriProvider;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
@@ -90,6 +91,7 @@ public class AdminServlet extends HttpServlet {
         params.put("exportDir", Settings.get("exportDir"));
         params.put("importDir", Settings.get("importDir"));
         params.put("includeAllProjects", Parser.parseBoolean(Settings.get("includeAllProjects"), false));
+        params.put("includeAllUsers", Parser.parseBoolean(Settings.get("includeAllUsers"), false));
 
         RunDetails lastRunExportDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class).getLastRunForJob(JobId.of(Settings.exportJobId));
         params.put("lastRunDateExport", lastRunExportDetails != null ? Settings.dateTimeFormat.format(lastRunExportDetails.getStartTime()) : "");
@@ -99,15 +101,14 @@ public class AdminServlet extends HttpServlet {
         params.put("lastRunDateImport", lastRunImportDetails != null ? Settings.dateTimeFormat.format(lastRunImportDetails.getStartTime()) : "");
         params.put("lastRunMessageImport", lastRunImportDetails != null ? lastRunImportDetails.getMessage() : "");
 
-        ProjectManager projectManager = ComponentAccessor.getProjectManager();
-        List<String> projectNames = new ArrayList<>();
-        projectManager.getProjects().forEach(p -> {
-            projectNames.add(p.getName());
-        });
-        Collections.sort(projectNames);
-        params.put("projects", projectNames);
+        params.put("projects", getProjectNames());
         String[] selectedProjects = Parser.parseArray(Settings.get("projects"));
         params.put("selectedProjects", Arrays.asList(selectedProjects));
+
+        params.put("users", getUserNames());
+        String[] selectedUsers = Parser.parseArray(Settings.get("users"));
+        params.put("selectedUsers", Arrays.asList(selectedUsers));
+
         JobDetails exportDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerService.class).getJobDetails(JobId.of(Settings.exportJobId));
         JobDetails importDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerService.class).getJobDetails(JobId.of(Settings.importJobId));
         params.put("runningInAutoMode", exportDetails != null && exportDetails.getNextRunTime() != null && importDetails != null && importDetails.getNextRunTime() != null);
@@ -150,10 +151,16 @@ public class AdminServlet extends HttpServlet {
                 break;
             case "Выполнить в ручном режиме":
                 logger.debug("export type = manual");
+
+                ManualExportStartEvent event = new ManualExportStartEvent(Parser.parseDate(req.getParameter("startDate"), Settings.getStartOfCurrentMonth()),
+                        Parser.parseDate(req.getParameter("endDate"), Settings.getEndOfCurrentMonth()));
+
                 boolean includeAllProjects = req.getParameterMap().containsKey("includeAllProjects") && req.getParameter("includeAllProjects").equalsIgnoreCase("on");
-                Settings.put("projects", includeAllProjects ? "null" : Arrays.toString(req.getParameterMap().get("projects")));
-                eventPublisher.publish(new ManualExportStartEvent(Parser.parseDate(req.getParameter("startDate"), Settings.getStartOfCurrentMonth()),
-                        Parser.parseDate(req.getParameter("endDate"), Settings.getEndOfCurrentMonth())));
+                event.setProjectNames(includeAllProjects ? new String[0] : req.getParameterMap().get("projects"));
+
+                boolean includeAllUsers = req.getParameterMap().containsKey("includeAllUsers") && req.getParameter("includeAllUsers").equalsIgnoreCase("on");
+                event.setUserNames(includeAllUsers ? new String[0] : req.getParameterMap().get("users"));
+                eventPublisher.publish(event);
                 break;
         }
         resp.sendRedirect(previousPage);
@@ -166,6 +173,8 @@ public class AdminServlet extends HttpServlet {
         Settings.put("importPeriod", req.getParameter("importPeriod"));
         Settings.put("includeAllProjects", req.getParameterMap().containsKey("includeAllProjects") && req.getParameter("includeAllProjects").equalsIgnoreCase("on"));
         Settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
+        Settings.put("includeAllUsers", req.getParameterMap().containsKey("includeAllUsers") && req.getParameter("includeAllUsers").equalsIgnoreCase("on"));
+        Settings.put("users", Arrays.toString(req.getParameterMap().get("users")));
     }
 
     private void redirectToLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -179,6 +188,26 @@ public class AdminServlet extends HttpServlet {
             builder.append(request.getQueryString());
         }
         return URI.create(builder.toString());
+    }
+
+    private Collection<String> getProjectNames() {
+        ProjectManager projectManager = ComponentAccessor.getProjectManager();
+        List<String> projectNames = new ArrayList<>();
+        projectManager.getProjects().forEach(p -> {
+            projectNames.add(p.getName());
+        });
+        Collections.sort(projectNames);
+        return projectNames;
+    }
+
+    private Collection<String> getUserNames() {
+        Collection<ApplicationUser> users = ComponentAccessor.getUserManager().getAllApplicationUsers();
+        List<String> userNames = new LinkedList<>();
+        for(ApplicationUser user : users) {
+            userNames.add(user.getName());
+        }
+        Collections.sort(userNames);
+        return userNames;
     }
 
     @EventListener

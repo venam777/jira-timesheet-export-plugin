@@ -90,9 +90,9 @@ public class EntryPoint {
             public WorklogExportParams call() {
                 RunDetails details = historyService.getLastSuccessfulRunForJob(JobId.of(Settings.exportJobId));
                 if (details == null) {
-                    return new WorklogExportParams(Settings.getStartOfCurrentMonth(), Settings.getEndOfCurrentMonth()).projects(getProjectsFromSettings());
+                    return new WorklogExportParams(Settings.getStartOfCurrentMonth(), Settings.getEndOfCurrentMonth()).projects(getProjectsFromSettings()).users(getUsersFromSettings());
                 }
-                return new WorklogExportParams(details.getStartTime(), Settings.getEndOfCurrentMonth()).projects(getProjectsFromSettings());
+                return new WorklogExportParams(details.getStartTime(), Settings.getEndOfCurrentMonth()).projects(getProjectsFromSettings()).users(getUsersFromSettings());
             }
         }));
         schedulerService.registerJobRunner(JobRunnerKey.of(Settings.importJobKey), new ImportPluginJob());
@@ -116,9 +116,11 @@ public class EntryPoint {
     public void onManualExportStartEvent(ManualExportStartEvent event) {
         logger.debug("onManualExportStartEvent started");
         checkComponents();
-        Collection<String> projects = getProjectsFromSettings();
+        Collection<String> projects = Arrays.asList(event.getProjectNames());
         logger.debug("projects = " + projects);
-        WorklogExportParams exportParams = new WorklogExportParams(event.startDate, event.endDate).projects(projects);
+        Collection<String> users = Arrays.asList(event.getUserNames());
+        logger.debug("users = " + users);
+        WorklogExportParams exportParams = new WorklogExportParams(event.startDate, event.endDate).projects(projects).users(users);
         try {
             WorklogExporter.getInstance().exportWorklog(exportParams);
         } catch (TransformerException | ParserConfigurationException | IOException e) {
@@ -164,6 +166,12 @@ public class EntryPoint {
         boolean includeAllProjects = Parser.parseBoolean(Settings.get("includeAllProjects"), false);
         logger.debug("includeAllProjects = " + includeAllProjects);
         return includeAllProjects ? Collections.emptyList() : Arrays.asList(Parser.parseArray(Settings.get("projects")));
+    }
+
+    private Collection<String> getUsersFromSettings() {
+        boolean includeAllUsers = Parser.parseBoolean(Settings.get("includeAllUsers"), false);
+        logger.debug("includeAllUsers = " +includeAllUsers);
+        return includeAllUsers ? Collections.emptyList() : Arrays.asList(Parser.parseArray(Settings.get("users")));
     }
 
     @EventListener
