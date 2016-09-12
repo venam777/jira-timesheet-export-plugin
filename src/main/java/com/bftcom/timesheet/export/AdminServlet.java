@@ -190,6 +190,7 @@ public class AdminServlet extends HttpServlet {
         return URI.create(builder.toString());
     }
 
+    //todo нужно переделать проекты по аналогии с пользователями.в качестве ключа-ключ проекта, значение - название проекта
     private Collection<String> getProjectNames() {
         ProjectManager projectManager = ComponentAccessor.getProjectManager();
         List<String> projectNames = new ArrayList<>();
@@ -200,14 +201,25 @@ public class AdminServlet extends HttpServlet {
         return projectNames;
     }
 
-    private Collection<String> getUserNames() {
-        Collection<ApplicationUser> users = ComponentAccessor.getUserManager().getAllApplicationUsers();
-        List<String> userNames = new LinkedList<>();
+    private Map<String, String> getUserNames() {
+        com.atlassian.jira.user.util.UserManager userManager = ComponentAccessor.getUserManager();
+        Collection<ApplicationUser> users = userManager.getAllApplicationUsers();
+        Map<String, String> result = new HashMap<>();
         for(ApplicationUser user : users) {
-            userNames.add(user.getName());
+            result.put(user.getName(), user.getDisplayName());
         }
-        Collections.sort(userNames);
-        return userNames;
+        List<Map.Entry<String,String>> list = new LinkedList<>(result.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<String, String>>() {
+            @Override
+            public int compare(Map.Entry<String, String> o1, Map.Entry<String, String> o2) {
+                return o1.getValue().compareTo(o2.getValue());
+            }
+        });
+        Map<String, String> sortedResult = new LinkedHashMap<>();
+        for (Map.Entry<String, String> user : list) {
+            sortedResult.put(user.getKey(), user.getValue());
+        }
+        return sortedResult;
     }
 
     @EventListener

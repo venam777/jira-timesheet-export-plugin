@@ -80,8 +80,8 @@
             <td>Пользователи:</td>
             <td>
                 <select name="users" id="users" multiple #if($includeAllUsers) disabled #end style="height: 200px">
-                    #foreach($user in $users)
-                        <option value='$user' #if ($selectedUsers.contains($user))selected#end>$user</option>
+                    #foreach($user in $users.keySet())
+                        <option value='$user' #if ($selectedUsers.contains($user))selected#end>$users.get($user)</option>
                     #end
                 </select>
             </td>
