@@ -209,6 +209,10 @@ public class WorklogExporter {
                 return true;
             });
         }
+        //дата С
+        if (exportParams.getStartDate() != null) {
+            worklogList.removeIf(w -> w.getCreated().before(exportParams.getStartDate()));
+        }
         //дата ДО
         if (exportParams.getEndDate() != null) {
             worklogList.removeIf(w -> w.getCreated().after(exportParams.getEndDate()));
