@@ -19,8 +19,6 @@ public class WorklogExportParams {
     private Date endDate;
     //todo
     //бюджеты
-    //задачи
-    //ид-шники worklog
 
     public WorklogExportParams(Date startDate, Date endDate) {
         this.startDate = startDate;

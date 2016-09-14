@@ -177,64 +177,56 @@ public class WorklogExporter {
 
     private Collection<Worklog> getUpdatedWorklogs(WorklogExportParams exportParams) {
         logger.debug("getUpdatedWorklogs started");
-        Date dateFrom = new Date();
-        if (exportParams.getStartDate() != null) {
-            dateFrom = exportParams.getStartDate();
-        }
-        logger.debug("start date = " + dateFrom);
+        final Date startDate = exportParams.getStartDate() != null ? exportParams.getStartDate() : new Date();
+        final Date endDate = exportParams.getEndDate() != null ? exportParams.getEndDate() : new Date();
+        logger.debug("start date = " + startDate);
+        logger.debug("end date = " + endDate);
+        logger.debug("projects = " + exportParams.getProjects());
+        logger.debug("users = " + exportParams.getUsers());
         WorklogStore worklogStore = getWorklogStore();
         if (worklogStore == null) {
             logger.error("worklog store is null!");
             return Collections.emptyList();
         }
-        List<Worklog> worklogList = worklogStore.getWorklogsUpdateSince(dateFrom.getTime(), Integer.MAX_VALUE);
-        logger.debug("since " + dateFrom + " was updated " + worklogList.size() + " worklogs");
-        for (Worklog w : worklogList) {
-            logger.debug("id : " + w.getId() + ", issue = " + w.getIssue().getKey());
-        }
-        //статусы
-        worklogList.removeIf(w -> !dao.isWorklogExportable(w));
-        //проекты
+        List<Worklog> worklogList = worklogStore.getWorklogsUpdateSince(startDate.getTime(), Integer.MAX_VALUE);
+        logger.debug("since " + startDate + " untill " + endDate + " there was updated " + worklogList.size() + " worklogs");
+        Set<String> projectKeys = new HashSet<>();
         if (exportParams.getProjects() != null && exportParams.getProjects().size() > 0) {
-            logger.debug("Filter worklogs by projects");
-            logger.debug("Projects: " + exportParams.getProjects());
-            worklogList.removeIf(w -> {
-                for (Project p : exportParams.getProjects()) {
-                    if (w.getIssue().getProjectId().equals(p.getId())) {
-                        logger.debug("worklog with id = " + w.getId() + " is correct for project with id = " + p.getId());
-                        return false;
-                    }
-                }
-                logger.debug("worklog with id = " + w.getId() + " doesn't match for selected projects");
-                return true;
-            });
+            for (Project p : exportParams.getProjects()) {
+                projectKeys.add(p.getKey());
+            }
         }
-        //дата С
-        if (exportParams.getStartDate() != null) {
-            worklogList.removeIf(w -> w.getCreated().before(exportParams.getStartDate()));
-        }
-        //дата ДО
-        if (exportParams.getEndDate() != null) {
-            worklogList.removeIf(w -> w.getCreated().after(exportParams.getEndDate()));
-        }
-        //пользователи
+        Set<String> userKeys = new HashSet<>();
         if (exportParams.getUsers() != null && exportParams.getUsers().size() > 0) {
-            logger.debug("Filter worklogs by users");
-            logger.debug("Users: " + exportParams.getUsers());
-            worklogList.removeIf(w-> {
-                for (ApplicationUser user : exportParams.getUsers()) {
-                    if (w.getAuthorKey().equals(user.getKey())) {
-                        logger.debug("worklog with id = " + w.getId() + " is correct for user with key = " + user.getKey());
-                        return false;
-                    }
-                }
-                logger.debug("worklog with id = " + w.getComment() + " doesn't match for selected users");
-                return true;
-            });
+            for (ApplicationUser user : exportParams.getUsers()) {
+                userKeys.add(user.getKey());
+            }
         }
-        //бюджеты
-        //задачи
-        //ид-шники worklog
+        logger.debug("Filter worklogs by status, start date, end date, projects and users");
+        worklogList.removeIf(w -> {
+            if (!dao.isWorklogExportable(w)) {
+                logger.debug("Deleting worklog (status), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
+                return true;
+            }
+            if (w.getStartDate().before(startDate)) {
+                logger.debug("Deleting worklog (start date), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
+                return true;
+            }
+            if (w.getStartDate().after(endDate)) {
+                logger.debug("Deleting worklog (end date), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
+                return true;
+            }
+            if (projectKeys.size() > 0 && !projectKeys.contains(w.getIssue().getProjectObject().getKey())) {
+                logger.debug("Deleting worklog (project), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
+                return true;
+            }
+            if (userKeys.size() > 0 && !userKeys.contains(w.getAuthorKey())) {
+                logger.debug("Deleting worklog (user), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
+                return true;
+            }
+            return false;
+        });
+        //добавить фильтр по бюджетам
         return worklogList;
     }
 

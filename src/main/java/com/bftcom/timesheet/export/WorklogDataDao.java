@@ -53,9 +53,7 @@ public class WorklogDataDao {
 
     public synchronized boolean isWorklogExportable(Worklog worklog) {
         String worklogStatus = getWorklogStatus(worklog.getId());
-        boolean result = worklogStatus.equals("") || worklogStatus.equals(WorklogData.NOT_VIEWED_STATUS);
-        logger.debug("worklog status = " + worklogStatus + ", worklog exportable = " + result);
-        return result;
+        return worklogStatus.equals("") || worklogStatus.equals(WorklogData.NOT_VIEWED_STATUS);
     }
 
     public String getWorklogStatus(Long worklogId) {
