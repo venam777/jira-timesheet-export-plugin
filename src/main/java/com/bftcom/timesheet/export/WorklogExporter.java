@@ -204,10 +204,6 @@ public class WorklogExporter {
         }
         logger.debug("Filter worklogs by status, start date, end date, projects and users");
         worklogList.removeIf(w -> {
-            if (!dao.isWorklogExportable(w)) {
-                logger.debug("Deleting worklog (status), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
-                return true;
-            }
             if (w.getStartDate().before(startDate)) {
                 logger.debug("Deleting worklog (start date), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
                 return true;
@@ -222,6 +218,10 @@ public class WorklogExporter {
             }
             if (userKeys.size() > 0 && !userKeys.contains(w.getAuthorKey())) {
                 logger.debug("Deleting worklog (user), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
+                return true;
+            }
+            if (!dao.isWorklogExportable(w)) {
+                logger.debug("Deleting worklog (status), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
                 return true;
             }
             return false;
