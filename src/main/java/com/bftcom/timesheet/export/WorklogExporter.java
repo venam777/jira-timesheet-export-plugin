@@ -220,7 +220,7 @@ public class WorklogExporter {
                 logger.debug("Deleting worklog (user), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
                 return true;
             }
-            if (!dao.isWorklogExportable(w)) {
+            if (!exportParams.isIncludeAllStatuses() && !dao.isWorklogExportable(w)) {
                 logger.debug("Deleting worklog (status), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
                 return true;
             }

@@ -21,6 +21,7 @@ import com.bftcom.timesheet.export.events.AutoExportStopEvent;
 import com.bftcom.timesheet.export.events.ManualExportStartEvent;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
+import org.apache.http.HttpRequest;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -92,6 +93,7 @@ public class AdminServlet extends HttpServlet {
         params.put("importDir", Settings.get("importDir"));
         params.put("includeAllProjects", Parser.parseBoolean(Settings.get("includeAllProjects"), false));
         params.put("includeAllUsers", Parser.parseBoolean(Settings.get("includeAllUsers"), false));
+        params.put("includeAllStatuses", Parser.parseBoolean(Settings.get("includeAllStatuses"), false));
 
         RunDetails lastRunExportDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerHistoryService.class).getLastRunForJob(JobId.of(Settings.exportJobId));
         params.put("lastRunDateExport", lastRunExportDetails != null ? Settings.dateTimeFormat.format(lastRunExportDetails.getStartTime()) : "");
@@ -155,11 +157,12 @@ public class AdminServlet extends HttpServlet {
                 ManualExportStartEvent event = new ManualExportStartEvent(Parser.parseDate(req.getParameter("startDate"), Settings.getStartOfCurrentMonth()),
                         Parser.parseDate(req.getParameter("endDate"), Settings.getEndOfCurrentMonth()));
 
-                boolean includeAllProjects = req.getParameterMap().containsKey("includeAllProjects") && req.getParameter("includeAllProjects").equalsIgnoreCase("on");
+                boolean includeAllProjects = getBooleanParam(req, "includeAllProjects");
                 event.setProjectNames(includeAllProjects ? new String[0] : req.getParameterMap().get("projects"));
 
-                boolean includeAllUsers = req.getParameterMap().containsKey("includeAllUsers") && req.getParameter("includeAllUsers").equalsIgnoreCase("on");
+                boolean includeAllUsers = getBooleanParam(req, "includeAllUsers");
                 event.setUserNames(includeAllUsers ? new String[0] : req.getParameterMap().get("users"));
+                event.setIncludeAllStatuses(getBooleanParam(req, "includeAllStatuses"));
                 eventPublisher.publish(event);
                 break;
         }
@@ -171,10 +174,11 @@ public class AdminServlet extends HttpServlet {
         Settings.put("importDir", req.getParameter("importDir"));
         Settings.put("exportPeriod", req.getParameter("exportPeriod"));
         Settings.put("importPeriod", req.getParameter("importPeriod"));
-        Settings.put("includeAllProjects", req.getParameterMap().containsKey("includeAllProjects") && req.getParameter("includeAllProjects").equalsIgnoreCase("on"));
+        Settings.put("includeAllProjects", getBooleanParam(req, "includeAllProjects"));
         Settings.put("projects", Arrays.toString(req.getParameterMap().get("projects")));
-        Settings.put("includeAllUsers", req.getParameterMap().containsKey("includeAllUsers") && req.getParameter("includeAllUsers").equalsIgnoreCase("on"));
+        Settings.put("includeAllUsers", getBooleanParam(req, "includeAllUsers"));
         Settings.put("users", Arrays.toString(req.getParameterMap().get("users")));
+        Settings.put("includeAllStatuses", getBooleanParam(req, "includeAllStatuses"));
     }
 
     private void redirectToLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -220,6 +224,10 @@ public class AdminServlet extends HttpServlet {
             sortedResult.put(user.getKey(), user.getValue());
         }
         return sortedResult;
+    }
+
+    private boolean getBooleanParam(HttpServletRequest req, String paramName) {
+        return req.getParameterMap().containsKey(paramName) && req.getParameter(paramName).equalsIgnoreCase("on");
     }
 
     @EventListener

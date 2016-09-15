@@ -6,8 +6,9 @@ public class ManualExportStartEvent {
 
     public final Date startDate;
     public final Date endDate;
-    public String[] projectNames;
-    public String[] userNames;
+    private String[] projectNames;
+    private String[] userNames;
+    private boolean includeAllStatuses;
 
     public ManualExportStartEvent(Date startDate, Date endDate) {
         this.startDate = startDate;
@@ -28,5 +29,13 @@ public class ManualExportStartEvent {
 
     public void setUserNames(String[] userNames) {
         this.userNames = userNames;
+    }
+
+    public boolean isIncludeAllStatuses() {
+        return includeAllStatuses;
+    }
+
+    public void setIncludeAllStatuses(boolean includeAllStatuses) {
+        this.includeAllStatuses = includeAllStatuses;
     }
 }

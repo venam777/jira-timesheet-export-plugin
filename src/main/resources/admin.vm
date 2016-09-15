@@ -59,6 +59,10 @@
             <td><input type="date" id="endDate" name="endDate" value=$endDate></td>
         </tr>
         <tr>
+            <td>Выгружать все трудозатраты, без учета статусов:</td>
+            <td><input type="checkbox" name="includeAllStatuses" #if($includeAllStatuses) checked #end style="width: 15px"></td>
+        </tr>
+        <tr>
             <td>Выгружать по всем проектам:</td>
             <td><input name="includeAllProjects" id="includeAllProjects" type="checkbox" #if($includeAllProjects) checked #end onchange="setIncludeAllProjects(this.checked)" style="width: 15px"></td>
         </tr>

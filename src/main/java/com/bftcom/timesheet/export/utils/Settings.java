@@ -35,6 +35,7 @@ public class Settings {
         defaultParams.put("projects", "[]");
         defaultParams.put("includeAllUsers", true);
         defaultParams.put("users", "[]");
+        defaultParams.put("includeAllStatuses", false);
     }
 
     private static PluginSettingsFactory factory;

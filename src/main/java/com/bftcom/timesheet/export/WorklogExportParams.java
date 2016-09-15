@@ -17,6 +17,7 @@ public class WorklogExportParams {
     private Collection<ApplicationUser> users;
     private Date startDate;
     private Date endDate;
+    private boolean includeAllStatuses;
     //todo
     //бюджеты
 
@@ -40,6 +41,11 @@ public class WorklogExportParams {
         } else {
             this.users = transformUsers((String[]) userNames.toArray());
         }
+        return this;
+    }
+
+    public WorklogExportParams includeAllStatuses(boolean includeAllStatuses) {
+        this.includeAllStatuses = includeAllStatuses;
         return this;
     }
 
@@ -81,5 +87,9 @@ public class WorklogExportParams {
 
     public Date getEndDate() {
         return endDate;
+    }
+
+    public boolean isIncludeAllStatuses() {
+        return includeAllStatuses;
     }
 }
