@@ -19,6 +19,7 @@ import com.atlassian.templaterenderer.TemplateRenderer;
 import com.bftcom.timesheet.export.events.AutoExportStartEvent;
 import com.bftcom.timesheet.export.events.AutoExportStopEvent;
 import com.bftcom.timesheet.export.events.ManualExportStartEvent;
+import com.bftcom.timesheet.export.utils.DateUtils;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
 import org.apache.http.HttpRequest;
@@ -154,8 +155,8 @@ public class AdminServlet extends HttpServlet {
             case "Выполнить в ручном режиме":
                 logger.debug("export type = manual");
 
-                ManualExportStartEvent event = new ManualExportStartEvent(Parser.parseDate(req.getParameter("startDate"), Settings.getStartOfCurrentMonth()),
-                        Parser.parseDate(req.getParameter("endDate"), Settings.getEndOfCurrentMonth()));
+                ManualExportStartEvent event = new ManualExportStartEvent(Parser.parseDate(req.getParameter("startDate"), DateUtils.getStartOfCurrentMonth()),
+                        Parser.parseDate(req.getParameter("endDate"), DateUtils.getEndOfCurrentMonth()));
 
                 boolean includeAllProjects = getBooleanParam(req, "includeAllProjects");
                 event.setProjectNames(includeAllProjects ? new String[0] : req.getParameterMap().get("projects"));

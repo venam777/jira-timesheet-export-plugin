@@ -21,6 +21,7 @@ import com.bftcom.timesheet.export.events.ManualExportStartEvent;
 import com.bftcom.timesheet.export.scheduler.ExportPluginJob;
 import com.bftcom.timesheet.export.scheduler.ImportPluginJob;
 import com.bftcom.timesheet.export.utils.Callback;
+import com.bftcom.timesheet.export.utils.DateUtils;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
 import com.google.common.collect.ImmutableMap;
@@ -90,9 +91,9 @@ public class EntryPoint {
             public WorklogExportParams call() {
                 RunDetails details = historyService.getLastSuccessfulRunForJob(JobId.of(Settings.exportJobId));
                 if (details == null) {
-                    return new WorklogExportParams(Settings.getStartOfCurrentMonth(), Settings.getEndOfCurrentMonth()).projects(getProjectsFromSettings()).users(getUsersFromSettings());
+                    return new WorklogExportParams(DateUtils.getStartOfCurrentMonth(), DateUtils.getEndOfCurrentMonth()).projects(getProjectsFromSettings()).users(getUsersFromSettings());
                 }
-                return new WorklogExportParams(details.getStartTime(), Settings.getEndOfCurrentMonth()).projects(getProjectsFromSettings()).users(getUsersFromSettings());
+                return new WorklogExportParams(details.getStartTime(), DateUtils.getEndOfCurrentMonth()).projects(getProjectsFromSettings()).users(getUsersFromSettings());
             }
         }));
         schedulerService.registerJobRunner(JobRunnerKey.of(Settings.importJobKey), new ImportPluginJob());

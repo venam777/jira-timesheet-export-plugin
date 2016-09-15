@@ -5,6 +5,7 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
+import com.bftcom.timesheet.export.utils.DateUtils;
 
 import java.util.*;
 
@@ -22,8 +23,8 @@ public class WorklogExportParams {
     //бюджеты
 
     public WorklogExportParams(Date startDate, Date endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
+        this.startDate = DateUtils.getStartOfDay(startDate);
+        this.endDate = DateUtils.getEndOfDay(endDate);
     }
 
     public WorklogExportParams projects(Collection<String> projectNames) {
