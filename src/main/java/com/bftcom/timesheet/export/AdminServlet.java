@@ -77,11 +77,6 @@ public class AdminServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         logger.debug("requesting config page");
-        String user = userManager.getRemoteUsername(request);
-        if (user == null || !userManager.isSystemAdmin(user)) {
-            redirectToLogin(request, response);
-            return;
-        }
         previousPage = request.getHeader("Referer");
         logger.debug("previous page : " + previousPage);
 
@@ -122,6 +117,7 @@ public class AdminServlet extends HttpServlet {
         VelocityEngine ve = new VelocityEngine();
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+        ve.setProperty("runtime.log.logsystem.class", "org.apache.velocity.runtime.log.NullLogSystem");
         try {
             ve.init();
             Template t = ve.getTemplate("admin.vm", "UTF-8");

@@ -32,7 +32,8 @@
                   location="/js/timesheet-plugin-worklog-script.js"/>
         <resource type="download" key="timesheet-plugin-worklog-style.css" name="timesheet-plugin-worklog-style.css"
                   location="/css/timesheet-plugin-worklog-style.css"/>
-        <context>atl.general</context>
+        <!--<context>atl.general</context>-->
+        <context>jira.view.issue</context>
     </web-resource>
 
     <!--roles-required="admin">&ndash;&gt;-->

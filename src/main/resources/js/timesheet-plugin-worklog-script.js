@@ -18,9 +18,6 @@
 
 oldfunc = window.onload;
 window.onload = function(event) {
-    if (oldfunc) {
-        oldfunc(event);
-    }
    customizeWorklogsStyle();
    window.setInterval(function() {
        customizeWorklogsStyle();
