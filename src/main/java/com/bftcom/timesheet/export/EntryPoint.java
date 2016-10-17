@@ -19,6 +19,7 @@ import com.bftcom.timesheet.export.events.AutoExportStartEvent;
 import com.bftcom.timesheet.export.events.AutoExportStopEvent;
 import com.bftcom.timesheet.export.events.ManualExportStartEvent;
 import com.bftcom.timesheet.export.scheduler.ExportPluginJob;
+import com.bftcom.timesheet.export.scheduler.FinanceProjectImportPluginJob;
 import com.bftcom.timesheet.export.scheduler.ImportPluginJob;
 import com.bftcom.timesheet.export.utils.Callback;
 import com.bftcom.timesheet.export.utils.DateUtils;
@@ -97,9 +98,11 @@ public class EntryPoint {
             }
         }));
         schedulerService.registerJobRunner(JobRunnerKey.of(Settings.importJobKey), new ImportPluginJob());
+        schedulerService.registerJobRunner(JobRunnerKey.of(Settings.financeProjectImportJobKey), new FinanceProjectImportPluginJob());
         try {
             startJob(Parser.parseFloat(Settings.get("exportPeriod"), Settings.getDefault("exportPeriod")), Settings.exportJobKey, Settings.exportJobId);
             startJob(Parser.parseFloat(Settings.get("importPeriod"), Settings.getDefault("importPeriod")), Settings.importJobKey, Settings.importJobId);
+            startJob(Parser.parseFloat(Settings.get("importPeriod"), Settings.getDefault("importPeriod")), Settings.financeProjectImportJobKey, Settings.financeProjectImportJobId);
         } catch (SchedulerServiceException e) {
             e.printStackTrace();
         }
@@ -146,6 +149,7 @@ public class EntryPoint {
         if (checkPluginByName(event.getPlugin().getName())) {
             schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.exportJobKey));
             schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.importJobKey));
+            schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.financeProjectImportJobKey));
         }
     }
 

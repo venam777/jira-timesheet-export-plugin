@@ -43,6 +43,10 @@
             <td><input type="text" id="importDir" name="importDir" value=$importDir></td>
         </tr>
         <tr>
+            <td>Директория импорта проектов учета:</td>
+            <td><input type="text" id="financeProjectImportDir" name="financeProjectImportDir" value=$financeProjectImportDir></td>
+        </tr>
+        <tr>
             <td>Периодичность экспорта, в часах:</td>
             <td><input type="number" id="exportPeriod" name="exportPeriod" value=$exportPeriod step="0.1"></td>
         </tr>

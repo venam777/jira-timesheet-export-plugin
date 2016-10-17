@@ -37,14 +37,14 @@ public class WorklogExporter {
     private WorklogDataDao dao;
     private CustomField financeProjectField;
 
-    private Long financeProjectFieldId = 12500L;
+    //private Long financeProjectFieldId = 12500L;
     private static WorklogExporter instance;
     private static Logger logger = LoggerFactory.getLogger(WorklogExporter.class);
 
     private WorklogExporter(WorklogDataDao dao) {
         this.dao = dao;
         manager = ComponentAccessor.getWorklogManager();
-        financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObject(financeProjectFieldId);
+        financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Бюджет проекта в ПУ");
     }
 
     public void exportWorklog(WorklogExportParams params) throws TransformerException, ParserConfigurationException, IOException {

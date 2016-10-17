@@ -87,6 +87,7 @@ public class AdminServlet extends HttpServlet {
         params.put("importPeriod", Settings.get("importPeriod"));
         params.put("exportDir", Settings.get("exportDir"));
         params.put("importDir", Settings.get("importDir"));
+        params.put("financeProjectImportDir", Settings.get("financeProjectImportDir"));
         params.put("includeAllProjects", Parser.parseBoolean(Settings.get("includeAllProjects"), false));
         params.put("includeAllUsers", Parser.parseBoolean(Settings.get("includeAllUsers"), false));
         params.put("includeAllStatuses", Parser.parseBoolean(Settings.get("includeAllStatuses"), false));
@@ -169,6 +170,7 @@ public class AdminServlet extends HttpServlet {
     private void saveMainSettings(HttpServletRequest req) {
         Settings.put("exportDir", req.getParameter("exportDir"));
         Settings.put("importDir", req.getParameter("importDir"));
+        Settings.put("financeProjectImportDir", req.getParameter("financeProjectImportDir"));
         Settings.put("exportPeriod", req.getParameter("exportPeriod"));
         Settings.put("importPeriod", req.getParameter("importPeriod"));
         Settings.put("includeAllProjects", getBooleanParam(req, "includeAllProjects"));

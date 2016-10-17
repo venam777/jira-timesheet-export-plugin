@@ -15,9 +15,11 @@ public class Settings {
     public static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH.mm.s");
     public static final String exportJobKey = pluginKey + ".EXPORT";
     public static final String importJobKey = pluginKey + ".IMPORT";
+    public static final String financeProjectImportJobKey = pluginKey + ".FINANCE_PROJECT_IMPORT";
 
     public static final String exportJobId = exportJobKey + ".0";
     public static final String importJobId = importJobKey + ".0";
+    public static final String financeProjectImportJobId = financeProjectImportJobKey + ".0";
 
     public static final boolean deleteFilesAfterImport = true;
     public static String importEncoding = "windows-1251";//UTF-8
@@ -29,6 +31,8 @@ public class Settings {
         defaultParams.put("importPeriod", 30 / 60f);
         defaultParams.put("exportDir", "/mnt/pm/import/");
         defaultParams.put("importDir", "/mnt/pm/proexport/");
+        defaultParams.put("financeProjectImportDir", "/mnt/pm/export/");
+//        defaultParams.put("financeProjectImportDir", "//pm/exchange/JIRA/export/");
 //        defaultParams.put("exportDir", "//pm/exchange/JIRA/import/");
 //        defaultParams.put("importDir", "//pm/exchange/JIRA/proexport/");
         defaultParams.put("includeAllProjects", true);
