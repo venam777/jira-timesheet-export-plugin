@@ -6,6 +6,7 @@ import com.atlassian.event.api.EventListener;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.type.EventType;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginInstalledEvent;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -110,6 +111,11 @@ public class EntryPoint {
 
     @EventListener
     public void onAutoExportStopEvent(AutoExportStopEvent event) {
+        logger.debug("Stopping auto import and export jobs");
+        ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+        if (user != null) {
+            logger.debug("current user name = " + user.getName());
+        }
         schedulerService.unscheduleJob(JobId.of(Settings.exportJobId));
         schedulerService.unscheduleJob(JobId.of(Settings.importJobId));
         schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.exportJobKey));
@@ -147,6 +153,11 @@ public class EntryPoint {
     @EventListener
     public void onPluginDisabled(PluginDisabledEvent event) {
         if (checkPluginByName(event.getPlugin().getName())) {
+            logger.debug("Plugin disabled event fired, stopping auto import and export jobs");
+            ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+            if (user != null) {
+                logger.debug("current user name = " + user.getName());
+            }
             schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.exportJobKey));
             schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.importJobKey));
             schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.financeProjectImportJobKey));

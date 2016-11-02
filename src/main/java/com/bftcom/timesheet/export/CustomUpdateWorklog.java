@@ -46,7 +46,9 @@ public class CustomUpdateWorklog extends UpdateWorklog {
         logger.debug("get comment started");
         String result = super.getComment();
         logger.debug("parent getComment() returned " + result);
-        result = Parser.parseWorklogComment(super.getComment());
+        if (result != null) {
+            result = Parser.parseWorklogComment(super.getComment());
+        }
         logger.debug("comment after parsing : " + result);
         return result;
     }

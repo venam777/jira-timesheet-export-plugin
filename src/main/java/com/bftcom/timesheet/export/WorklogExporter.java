@@ -44,7 +44,7 @@ public class WorklogExporter {
     private WorklogExporter(WorklogDataDao dao) {
         this.dao = dao;
         manager = ComponentAccessor.getWorklogManager();
-        financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Бюджет проекта в ПУ");
+        financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Бюджет проекта ПУ");
     }
 
     public void exportWorklog(WorklogExportParams params) throws TransformerException, ParserConfigurationException, IOException {

@@ -49,6 +49,7 @@ public class Parser {
     }
 
     public static String parseWorklogComment(String dirtyComment) {
+        if (dirtyComment == null) return "";
         String prefix = "| Статус: ";
         String status1 = prefix + WorklogData.NOT_VIEWED_STATUS;
         String status2 = prefix + WorklogData.APPROVED_STATUS;

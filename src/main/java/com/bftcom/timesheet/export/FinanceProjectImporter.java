@@ -33,8 +33,7 @@ public class FinanceProjectImporter {
 
     private static FinanceProjectImporter instance = new FinanceProjectImporter();
     private static Logger logger = LoggerFactory.getLogger(FinanceProjectImporter.class);
-    private static String financeProjectFieldName = "Бюджет проекта в ПУ";
-    private static String charset = "UTF-8";
+    private static String financeProjectFieldName = "Бюджет проекта ПУ";
 
     public void startImport(String dirName) throws ParserConfigurationException, IOException, SAXException {
         logger.debug("import worklogs started");
@@ -53,7 +52,7 @@ public class FinanceProjectImporter {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             InputSource source = new InputSource(fXmlFile.toURI().toString());
-            source.setEncoding(charset);
+            source.setEncoding(Settings.importEncoding);
             Document doc;
             doc = dBuilder.parse(source);
             //optional, but recommended

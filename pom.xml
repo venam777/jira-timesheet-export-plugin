@@ -24,6 +24,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <jira.version>7.1.2</jira.version>
+        <jira.sd.version>3.1.9</jira.sd.version>
         <amps.version>6.2.4</amps.version>
         <!-- This key is used to keep the consistency between the key in atlassian-plugin.xml and the key to generate bundle. -->
         <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
@@ -292,6 +293,7 @@
                     <installPlugin>true</installPlugin>
                     <parallel>true</parallel>
                     <enableFastdev>false</enableFastdev>
+                    <compressResources>false</compressResources>
                     <!--для локальной отладки-->
                     <products>
                         <product>
@@ -304,6 +306,8 @@
                             <jvmArgs>${jira.jvm.args}</jvmArgs>
                             <applications>
                                 <application>
+                                    <!--<applicationKey>jira-servicedesk</applicationKey>-->
+                                    <!--<version>${jira.sd.version}</version>-->
                                     <applicationKey>jira-software</applicationKey>
                                     <version>${jira.version}</version>
                                 </application>

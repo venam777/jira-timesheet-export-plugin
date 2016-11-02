@@ -122,7 +122,6 @@ public class AdminServlet extends HttpServlet {
         try {
             ve.init();
             Template t = ve.getTemplate("admin.vm", "UTF-8");
-//            t.setEncoding("UTF-8");
             response.setContentType("text/html;charset=utf-8");
             t.merge(context, response.getWriter());
         } catch (Exception e) {
@@ -141,11 +140,19 @@ public class AdminServlet extends HttpServlet {
                 break;
             case "Запустить":
                 logger.debug("export type = start auto");
+                ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+                if (user != null) {
+                    logger.debug("User " + user.getName() + " started export and import");
+                }
                 saveMainSettings(req);
                 eventPublisher.publish(new AutoExportStartEvent());
                 break;
             case "Остановить":
                 logger.debug("export type = stop auto");
+                user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+                if (user != null) {
+                    logger.debug("User " + user.getName() + " stopped export and import");
+                }
                 saveMainSettings(req);
                 eventPublisher.publish(new AutoExportStopEvent());
                 break;
