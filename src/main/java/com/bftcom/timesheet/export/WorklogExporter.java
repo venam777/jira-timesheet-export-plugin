@@ -12,6 +12,7 @@ import com.atlassian.jira.issue.worklog.WorklogStore;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.user.ApplicationUser;
 import com.bftcom.timesheet.export.entity.WorklogData;
+import com.bftcom.timesheet.export.utils.Constants;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class WorklogExporter {
     private WorklogExporter(WorklogDataDao dao) {
         this.dao = dao;
         manager = ComponentAccessor.getWorklogManager();
-        financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName("Бюджет проекта ПУ");
+        financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName(Constants.financeProjectFieldName);
     }
 
     public void exportWorklog(WorklogExportParams params) throws TransformerException, ParserConfigurationException, IOException {

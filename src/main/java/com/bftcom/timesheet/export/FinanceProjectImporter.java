@@ -8,6 +8,7 @@ import com.atlassian.jira.issue.customfields.option.Options;
 import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.fields.config.FieldConfig;
 import com.atlassian.jira.issue.fields.config.FieldConfigScheme;
+import com.bftcom.timesheet.export.utils.Constants;
 import com.bftcom.timesheet.export.utils.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,6 @@ public class FinanceProjectImporter {
 
     private static FinanceProjectImporter instance = new FinanceProjectImporter();
     private static Logger logger = LoggerFactory.getLogger(FinanceProjectImporter.class);
-    private static String financeProjectFieldName = "Бюджет проекта ПУ";
 
     public void startImport(String dirName) throws ParserConfigurationException, IOException, SAXException {
         logger.debug("import worklogs started");
@@ -77,9 +77,9 @@ public class FinanceProjectImporter {
                 if (finprojects == null || finprojects.getLength() == 0) {
                     logger.error("There is no any finprojects into tag FINPROJECT");
                 }
-                CustomField financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName(financeProjectFieldName);
+                CustomField financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName(Constants.financeProjectFieldName);
                 if (financeProjectField == null) {
-                    logger.error("Custom field with name = " + financeProjectFieldName + " was not found!");
+                    logger.error("Custom field with name = " + Constants.financeProjectFieldName + " was not found!");
                     continue;
                 }
                 for (int index = 0; index < finprojects.getLength(); index++) {
@@ -96,10 +96,10 @@ public class FinanceProjectImporter {
                     }
                 }
             }
-            if (Settings.deleteFilesAfterImport) {
-                logger.debug("deleting file " + fXmlFile.getName());
-                fXmlFile.delete();
-            }
+//            if (Settings.deleteFilesAfterImport) {
+//                logger.debug("deleting file " + fXmlFile.getName());
+//                fXmlFile.delete();
+//            }
         }
     }
 

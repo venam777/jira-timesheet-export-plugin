@@ -39,18 +39,49 @@
     <!--roles-required="admin">&ndash;&gt;-->
     <webwork1 key="timesheet-plugin-update-worklog2" name="Updating worklog" class="java.lang.Object">
         <actions>
-            <action name="com.bftcom.timesheet.export.CustomUpdateWorklog" alias="UpdateWorklog">
+            <action name="com.bftcom.timesheet.export.actions.CustomUpdateWorklog" alias="UpdateWorklog">
                 <!--<view name="error">/secure/views/issue/logwork.jsp</view>-->
                 <!--<view name="input">/secure/views/issue/logwork.jsp</view>-->
                 <!--<view name="securitybreach">/secure/views/securitybreach.jsp</view>-->
             </action>
-            <action name="com.bftcom.timesheet.export.CustomUpdateWorklog" alias="CustomUpdateWorklog">
+            <action name="com.bftcom.timesheet.export.actions.CustomUpdateWorklog" alias="CustomUpdateWorklog">
                 <!--<view name="error">/secure/views/issue/logwork.jsp</view>-->
                 <!--<view name="input">/secure/views/issue/logwork.jsp</view>-->
                 <!--<view name="securitybreach">/secure/views/securitybreach.jsp</view>-->
             </action>
         </actions>
     </webwork1>
+
+    <!-- Overriding the Create Worklog action -->
+    <webwork1 key="bft-create-worklog" name="BFT Create Worklog" class="java.lang.Object">
+        <actions>
+            <!--roles-required="jira-software-users"-->
+            <action name="com.bftcom.timesheet.export.actions.CreateWorklogEx" alias="CreateWorklog"/>
+            <action name="com.bftcom.timesheet.export.actions.CreateWorklogEx" alias="CreateWorklogEx">
+                <!--<view name="error">/secure/views/issue/logwork.jsp</view>-->
+                <!--<view name="input">/secure/views/issue/logwork.jsp</view>-->
+                <!--<view name="securitybreach">/secure/views/securitybreach.jsp</view>-->
+            </action>
+        </actions>
+    </webwork1>
+
+    <webwork1 key="bft-commentassignissue" name="BFT CommentAssignIssue" class="java.lang.Object">
+        <actions>
+            <action name="com.bftcom.timesheet.export.actions.CommentAssignIssueEx" alias="CommentAssignIssue">
+                <!--<view name="error">/secure/views/issue/commentassignissue.jsp</view>-->
+                <!--<view name="input">/secure/views/issue/commentassignissue.jsp</view>-->
+                <!--<view name="invalidworkflowaction">/secure/views/workflowactioninvalid.jsp</view>-->
+                <!--<view name="securitybreach">/secure/views/securitybreach.jsp</view>-->
+                <!--<view name="issue-permission-error">/issue-permission-error.jsp</view>-->
+            </action>
+            <action name="com.bftcom.timesheet.export.actions.CommentAssignIssueEx" alias="CommentAssignIssueEx"/>
+        </actions>
+    </webwork1>
+
+    <!--<component key="jiraDurationUtils" name="JIRA Duration Utils" class="com.atlassian.jira.util.JiraDurationUtils"/>-->
+    <component key="componentLocator" name="Component Locator" class="com.atlassian.jira.util.JiraComponentLocator">
+        <interface>com.atlassian.jira.util.ComponentLocator</interface>
+    </component>
 
     <component-import key="ao" interface="com.atlassian.activeobjects.external.ActiveObjects"/>
     <ao key="ao-entities">
