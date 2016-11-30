@@ -40,6 +40,7 @@ public class CommentAssignIssueEx extends CommentAssignIssue {
         String[] date = (String[]) ActionContext.getParameters().get("worklog_startDate");
         if ((dur != null && dur[0].length() > 0)) {
             CreateWorklogEx.doValidateBudget(this, getIssueObject(), getLoggedInUser().getName(), getParsedStartDate(date[0]), log);
+            CreateWorklogEx.validatePeriodCloseDate(this, getIssueObject(), getLoggedInUser().getName(), getParsedStartDate(date[0]), log);
         }
     }
 

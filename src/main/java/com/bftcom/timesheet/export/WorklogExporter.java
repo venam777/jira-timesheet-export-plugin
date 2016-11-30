@@ -84,6 +84,7 @@ public class WorklogExporter {
             Element control = doc.createElement("CONTROL");
             addAttribute(doc, control, "ID", issue.getKey());
             addAttribute(doc, control, "CAPTION", issue.getKey() + " " + issue.getSummary());
+            addAttribute(doc, control, "URL", getShortIssueUrl(issue));
             String finProjectId = getFinanceProjectId(issue);
             if (finProjectId != null) {
                 addAttribute(doc, control, "FINPROJECTID", finProjectId);
@@ -148,8 +149,8 @@ public class WorklogExporter {
 
         DOMSource source = new DOMSource(doc);
         logger.debug("Export file path: " + fileNameWithPath);
-        String fileName = fileNameWithPath.substring(fileNameWithPath.lastIndexOf('/') + 1);
-        String path = fileNameWithPath.substring(0, fileNameWithPath.lastIndexOf('/'));
+        String fileName = fileNameWithPath.substring(fileNameWithPath.lastIndexOf(File.separator) + 1);
+        String path = fileNameWithPath.substring(0, fileNameWithPath.lastIndexOf(File.separator));
         logger.debug("file directory: " + path);
         logger.debug("file name : " + fileName);
         File file = new File(path, fileName);
@@ -280,6 +281,10 @@ public class WorklogExporter {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private String getShortIssueUrl(Issue issue) {
+        return ComponentAccessor.getApplicationProperties().getString("jira.baseurl") + "/browse/" + issue.getKey();
     }
 
     public synchronized static void createInstance(WorklogDataDao dao) {
