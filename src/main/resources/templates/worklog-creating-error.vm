@@ -1,0 +1,10 @@
+<head>
+</head>
+<body>
+<div style="margin: 10px 10px 5px 10px">
+    <span style="display: block">Во время создания worklog'а произошли ошибки:</span>
+    #foreach($error in $worklogErrors)
+        <span style="display: block">- $error</span>
+    #end
+</div>
+</body>

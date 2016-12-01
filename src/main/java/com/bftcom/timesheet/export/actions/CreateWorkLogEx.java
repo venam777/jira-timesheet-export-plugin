@@ -12,11 +12,11 @@ import com.atlassian.jira.web.FieldVisibilityManager;
 import com.atlassian.jira.web.action.issue.AbstractIssueSelectAction;
 import com.atlassian.jira.web.action.issue.CreateWorklog;
 import com.bftcom.timesheet.export.utils.Constants;
-import com.bftcom.timesheet.export.utils.DateUtils;
 import com.bftcom.timesheet.export.utils.Parser;
+import com.bftcom.timesheet.export.utils.Settings;
 import com.bftcom.timesheet.export.utils.XMLUtil;
-import org.apache.log4j.Logger;
 import org.apache.xpath.XPathAPI;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,7 +26,10 @@ import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,6 +42,10 @@ import java.util.Date;
 //java.io.FileNotFoundException: class path resource [com/atlassian/jira/web/action/IssueActionSupport.class] cannot be opened because it does not exist
 //@Component
 public class CreateWorklogEx extends CreateWorklog {
+
+    private static String userGroup = "jira-users";
+    private static Logger log = LoggerFactory.getLogger(CreateWorklogEx.class);
+    private static List<String> errors = new ArrayList<>();
 
     //    @Inject
     public CreateWorklogEx(/*@ComponentImport WorklogService worklogService,
@@ -74,13 +81,13 @@ public class CreateWorklogEx extends CreateWorklog {
         return (customField != null ? issue.getCustomFieldValue(customField) : null);
     }
 
-    public static void doValidateBudget(AbstractIssueSelectAction obj, Issue issue, String user, Date worklog_StartDate, Logger log) {
+    public static void doValidateBudget(Issue issue, String user, Date worklog_StartDate, Collection<String> errorMessages) {
         log.debug("Validating budget started");
         log.debug("User = " + user);
         log.debug("Issue key = " + issue.getKey());
         log.debug("start date = " + Parser.formatDate(worklog_StartDate));
-        if (ComponentAccessor.getUserUtil().getGroupNamesForUser(user).contains("check_worklog")) {
-            log.debug("User groups contains group with name = check_worklog");
+        if (ComponentAccessor.getUserUtil().getGroupNamesForUser(user).contains(userGroup)) {
+            log.debug("User groups contains group with name = " + userGroup);
             Object budgetNameObj = getCustomFieldValue(issue, Constants.financeProjectFieldName);
             String budgetName = (budgetNameObj == null ? null : budgetNameObj.toString());
             log.debug("budget name = " + budgetName);
@@ -98,14 +105,13 @@ public class CreateWorklogEx extends CreateWorklog {
                     String budgetId = budgetName.substring(pos + 1);
 
 //                    File f = new File("D:\\timesheets\\msg_000000_000001_.xml");
-                    File f = new File("/mnt/pm/export/msg_000000_000001_.xml");
-
+                    File f = getFinanceProjectFile();
                     try {
                         Document doc = XMLUtil.createDocument(f, "windows-1251");
                         Element docElem = doc.getDocumentElement();
                         NodeList list = XPathAPI.selectNodeList(docElem, "/MSG/BODY/RPL/PERIOD/CHANGED/PERIOD[@FINPROJECT_ID=" + budgetId + "]");
                         if ((list == null) || (list.getLength() == 0)) {
-                            obj.addErrorMessage("Списание времени невозможно. Бюджет или этап [" + budgetName + "], ID[" + budgetId + "] не найден");
+                            errorMessages.add("Списание времени невозможно. Бюджет или этап [" + budgetName + "], ID[" + budgetId + "] не найден");
                         } else {
                             boolean checkPeriod = false;
                             for (int i = 0; i < list.getLength(); i++) {
@@ -118,40 +124,44 @@ public class CreateWorklogEx extends CreateWorklog {
                                 }
                             }
                             if (!checkPeriod) {
-                                obj.addErrorMessage("Списание времени невозможно. Указан бюджет проекта не действующий на выбранную дату.");
+                                errorMessages.add("Списание времени невозможно. Указан бюджет проекта не действующий на выбранную дату.");
                             }
                         }
                     } catch (FileNotFoundException e) {
-                        obj.addErrorMessage("Списание времени невозможно. FileNotFoundException");
+                        errorMessages.add("Списание времени невозможно. Не найден файл с выгрузкой бюджетов (msg_000000_000001_.xml)");
                         log.error("Ошибка в методе проверки списания времени: " + e.getMessage());
                     } catch (TransformerException e) {
-                        obj.addErrorMessage("Списание времени невозможно. TransformerException");
+                        errorMessages.add("Списание времени невозможно. TransformerException");
                         log.error("Ошибка в методе проверки списания времени: " + e.getMessage());
                     }
                 } else {
-                    obj.addErrorMessage("Списание времени невозмножно. Не найден ID в значении бюджета проекта");
+                    errorMessages.add("Списание времени невозможно. Не найден ID в значении бюджета проекта");
                 }
             } else {
-                obj.addErrorMessage("Списание времени невозмножно. Не указан бюджет проекта");
+                errorMessages.add("Списание времени невозможно. Не указан бюджет проекта");
             }
         }
     }
 
-    public static void validatePeriodCloseDate(AbstractIssueSelectAction obj, Issue issue, String user, Date worklogStartDate, Logger log) {
+    public static void validatePeriodCloseDate(Issue issue, String user, Date worklogStartDate, Collection<String> errorMessages) {
         log.debug("Validating period closed date started");
         log.debug("User = " + user);
         log.debug("Issue key = " + issue.getKey());
         log.debug("start date = " + Parser.formatDate(worklogStartDate));
-        if (ComponentAccessor.getUserUtil().getGroupNamesForUser(user).contains("check_worklog")) {
-            log.debug("User groups contains group with name = check_worklog");
-            File f = new File("/mnt/pm/export/msg_000000_000001_.xml");
+        if (ComponentAccessor.getUserUtil().getGroupNamesForUser(user).contains(userGroup)) {
+            log.debug("User groups contains group with name = " + userGroup);
+            File f = getFinanceProjectFile();
             try {
                 Document doc = XMLUtil.createDocument(f, "windows-1251");
                 Element docElem = doc.getDocumentElement();
-                NodeList list = XPathAPI.selectNodeList(docElem, "/MSG/BODY/RPL/SYSPARAM/CHANGED/SYSPARAM[@NAME=period.close.date]");
+                //[@NAME=period.close.date]
+                NodeList list = XPathAPI.selectNodeList(docElem, "/MSG/BODY/RPL/SYSPARAM/CHANGED/SYSPARAM");
                 if ((list != null) && (list.getLength() != 0)) {
                     for (int i = 0; i < list.getLength(); i++) {
                         Element elem = (Element) list.item(i);
+                        if (!elem.getAttribute("NAME").equalsIgnoreCase("period.close.date")) {
+                            continue;
+                        }
                         log.debug("period.close.date = " + elem.getAttribute("PARAM_VALUE"));
                         Date startDate = Parser.parseDate(elem.getAttribute("PARAM_VALUE"), null);
                         if (startDate == null) {
@@ -161,29 +171,48 @@ public class CreateWorklogEx extends CreateWorklog {
                         log.debug("date after parsing : " + Parser.formatDateTime(startDate));
                         if (worklogStartDate.before(startDate)) {
                             log.debug("");
-                            obj.addErrorMessage("Списание времени невозможно. Указан бюджет проекта не действующий на выбранную дату.");
+                            errorMessages.add("Списание времени невозможно. Указан бюджет проекта не действующий на выбранную дату.");
                         }
                     }
                 } else {
                     log.error("There is no param /MSG/BODY/RPL/SYSPARAM/CHANGED/SYSPARAM in xml file!");
                 }
             } catch (FileNotFoundException e) {
-                obj.addErrorMessage("Списание времени невозможно. FileNotFoundException");
-                log.error("Ошибка в методе проверки списания времени: " + e.getMessage());
+                errorMessages.add("Списание времени невозможно. Не найден файл с выгрузкой бюджетов (msg_000000_000001_.xml)");
+                log.error("Ошибка в методе проверки списания времени: ", e);
             } catch (TransformerException e) {
-                obj.addErrorMessage("Списание времени невозможно. TransformerException");
-                log.error("Ошибка в методе проверки списания времени: " + e.getMessage());
+                errorMessages.add("Списание времени невозможно. TransformerException");
+                log.error("Ошибка в методе проверки списания времени: ", e);
             }
         }
+    }
+
+    private static File getFinanceProjectFile() {
+        String filePath = Settings.get("financeProjectImportDir");
+        log.debug("XML file path = " + filePath);
+        if (!filePath.endsWith(File.separator)) {
+            filePath = filePath + File.separator;
+        }
+        return new File(filePath + "msg_000000_000001_.xml");
+    }
+
+    @Override
+    protected String doExecute() throws Exception {
+        return errors.size() > 0 ? "budgetError" : super.doExecute();
     }
 
 
     @Override
     protected void doValidation() {
+        errors.clear();
         super.doValidation();
         if (getWorklog() != null) {
-            doValidateBudget(this, getIssueObject(), getWorklog().getAuthorKey(), getWorklog().getStartDate(), log);
-            validatePeriodCloseDate(this, getIssueObject(), getWorklog().getAuthorKey(), getWorklog().getStartDate(), log);
+            doValidateBudget(getIssueObject(), getWorklog().getAuthorKey(), getWorklog().getStartDate(), errors);
+            validatePeriodCloseDate(getIssueObject(), getWorklog().getAuthorKey(), getWorklog().getStartDate(), errors);
         }
+    }
+
+    public Collection<String> getWorklogErrors() {
+        return errors;
     }
 }

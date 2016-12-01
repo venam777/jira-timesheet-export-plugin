@@ -7,7 +7,7 @@
         <param name="plugin-logo">images/bftPluginLogo.png</param>
         <param name="configure.url">/plugins/servlet/timesheet-export/config</param>
         <!--<bundle-instructions>-->
-            <!--<Import-Package>com.atlassian.jira.web.*;resolution:="optional"</Import-Package>-->
+        <!--<Import-Package>com.atlassian.jira.web.*;resolution:="optional"</Import-Package>-->
         <!--</bundle-instructions>-->
     </plugin-info>
 
@@ -56,11 +56,14 @@
     <webwork1 key="bft-create-worklog" name="BFT Create Worklog" class="java.lang.Object">
         <actions>
             <!--roles-required="jira-software-users"-->
-            <action name="com.bftcom.timesheet.export.actions.CreateWorklogEx" alias="CreateWorklog"/>
+            <action name="com.bftcom.timesheet.export.actions.CreateWorklogEx" alias="CreateWorklog">
+                <view name="budgetError">/templates/worklog-creating-error.vm</view>
+            </action>
             <action name="com.bftcom.timesheet.export.actions.CreateWorklogEx" alias="CreateWorklogEx">
                 <!--<view name="error">/secure/views/issue/logwork.jsp</view>-->
                 <!--<view name="input">/secure/views/issue/logwork.jsp</view>-->
                 <!--<view name="securitybreach">/secure/views/securitybreach.jsp</view>-->
+                <view name="budgetError">/templates/worklog-creating-error.vm</view>
             </action>
         </actions>
     </webwork1>
@@ -68,13 +71,16 @@
     <webwork1 key="bft-commentassignissue" name="BFT CommentAssignIssue" class="java.lang.Object">
         <actions>
             <action name="com.bftcom.timesheet.export.actions.CommentAssignIssueEx" alias="CommentAssignIssue">
+                <view name="budgetError">/templates/worklog-creating-error.vm</view>
                 <!--<view name="error">/secure/views/issue/commentassignissue.jsp</view>-->
                 <!--<view name="input">/secure/views/issue/commentassignissue.jsp</view>-->
                 <!--<view name="invalidworkflowaction">/secure/views/workflowactioninvalid.jsp</view>-->
                 <!--<view name="securitybreach">/secure/views/securitybreach.jsp</view>-->
                 <!--<view name="issue-permission-error">/issue-permission-error.jsp</view>-->
             </action>
-            <action name="com.bftcom.timesheet.export.actions.CommentAssignIssueEx" alias="CommentAssignIssueEx"/>
+            <action name="com.bftcom.timesheet.export.actions.CommentAssignIssueEx" alias="CommentAssignIssueEx">
+                <view name="budgetError">/templates/worklog-creating-error.vm</view>
+            </action>
         </actions>
     </webwork1>
 
