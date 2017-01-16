@@ -45,7 +45,7 @@ public class CreateWorklogEx extends CreateWorklog {
 
     private static String userGroup = "jira-users";
     private static Logger log = LoggerFactory.getLogger(CreateWorklogEx.class);
-    private static List<String> errors = new ArrayList<>();
+    private List<String> errors = new ArrayList<>();
 
     //    @Inject
     public CreateWorklogEx(/*@ComponentImport WorklogService worklogService,
@@ -171,7 +171,7 @@ public class CreateWorklogEx extends CreateWorklog {
                         log.debug("date after parsing : " + Parser.formatDateTime(startDate));
                         if (worklogStartDate.before(startDate)) {
                             log.debug("");
-                            errorMessages.add("Списание времени невозможно. Указан бюджет проекта не действующий на выбранную дату.");
+                            errorMessages.add("Списание времени невозможно. Первая разрешенная дата " + elem.getAttribute("PARAM_VALUE"));
                         }
                     }
                 } else {

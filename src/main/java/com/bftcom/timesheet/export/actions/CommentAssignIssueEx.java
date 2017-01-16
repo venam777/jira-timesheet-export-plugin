@@ -7,6 +7,7 @@ import com.atlassian.jira.workflow.IssueWorkflowManager;
 import webwork.action.ActionContext;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
 
 public class CommentAssignIssueEx extends CommentAssignIssue {
 
-    private static List<String> errors = new ArrayList<>();
+    private List<String> errors = new ArrayList<>();
 
     public CommentAssignIssueEx(/*SubTaskManager subTaskManager, FieldScreenRendererFactory fieldScreenRendererFactory, CommentService commentService, IssueService issueService, UserUtil userUtil, IssueWorkflowManager issueWorkflowManager*/) {
         super(ComponentAccessor.getSubTaskManager(),
@@ -52,5 +53,9 @@ public class CommentAssignIssueEx extends CommentAssignIssue {
     @Override
     protected String doExecute() throws Exception {
         return errors.size() > 0 ? "budgetError" : super.doExecute();
+    }
+
+    public Collection<String> getWorklogErrors() {
+        return errors;
     }
 }

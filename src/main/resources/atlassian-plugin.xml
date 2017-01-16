@@ -72,14 +72,19 @@
         <actions>
             <action name="com.bftcom.timesheet.export.actions.CommentAssignIssueEx" alias="CommentAssignIssue">
                 <view name="budgetError">/templates/worklog-creating-error.vm</view>
-                <!--<view name="error">/secure/views/issue/commentassignissue.jsp</view>-->
-                <!--<view name="input">/secure/views/issue/commentassignissue.jsp</view>-->
-                <!--<view name="invalidworkflowaction">/secure/views/workflowactioninvalid.jsp</view>-->
-                <!--<view name="securitybreach">/secure/views/securitybreach.jsp</view>-->
-                <!--<view name="issue-permission-error">/issue-permission-error.jsp</view>-->
+                <view name="error">/secure/views/issue/commentassignissue.jsp</view>
+                <view name="input">/secure/views/issue/commentassignissue.jsp</view>
+                <view name="invalidworkflowaction">/secure/views/workflowactioninvalid.jsp</view>
+                <view name="securitybreach">/secure/views/securitybreach.jsp</view>
+                <view name="issue-permission-error">/issue-permission-error.jsp</view>
             </action>
             <action name="com.bftcom.timesheet.export.actions.CommentAssignIssueEx" alias="CommentAssignIssueEx">
                 <view name="budgetError">/templates/worklog-creating-error.vm</view>
+                <view name="error">/secure/views/issue/commentassignissue.jsp</view>
+                <view name="input">/secure/views/issue/commentassignissue.jsp</view>
+                <view name="invalidworkflowaction">/secure/views/workflowactioninvalid.jsp</view>
+                <view name="securitybreach">/secure/views/securitybreach.jsp</view>
+                <view name="issue-permission-error">/issue-permission-error.jsp</view>
             </action>
         </actions>
     </webwork1>

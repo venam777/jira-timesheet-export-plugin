@@ -8,6 +8,7 @@ import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.type.EventType;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
+import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.plugin.event.events.PluginInstalledEvent;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -79,9 +80,17 @@ public class EntryPoint {
 
     @EventListener
     public void pluginInstalled(PluginInstalledEvent event) {
-        if (checkPluginByName(event.getPlugin().getName())) {
+        if (checkPluginByName(event.getPlugin().getKey())) {
             logger.debug("plugin was installed");
             Settings.saveDefaultSettings();
+        }
+    }
+
+    @EventListener
+    public void onPluginEnabled(PluginEnabledEvent event) {
+        if (checkPluginByName(event.getPlugin().getKey())) {
+            logger.debug("plugin was enabled");
+            eventPublisher.publish(new AutoExportStartEvent());
         }
     }
 
@@ -118,8 +127,10 @@ public class EntryPoint {
         }
         schedulerService.unscheduleJob(JobId.of(Settings.exportJobId));
         schedulerService.unscheduleJob(JobId.of(Settings.importJobId));
+        schedulerService.unscheduleJob(JobId.of(Settings.financeProjectImportJobId));
         schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.exportJobKey));
         schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.importJobKey));
+        schedulerService.unregisterJobRunner(JobRunnerKey.of(Settings.financeProjectImportJobKey));
     }
 
     @EventListener
@@ -152,7 +163,7 @@ public class EntryPoint {
 
     @EventListener
     public void onPluginDisabled(PluginDisabledEvent event) {
-        if (checkPluginByName(event.getPlugin().getName())) {
+        if (checkPluginByName(event.getPlugin().getKey())) {
             logger.debug("Plugin disabled event fired, stopping auto import and export jobs");
             ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
             if (user != null) {
@@ -175,8 +186,8 @@ public class EntryPoint {
         logger.debug("job scheduled");
     }
 
-    private boolean checkPluginByName(String pluginName) {
-        return pluginName.equals("jira-timesheet-export-plugin");
+    private boolean checkPluginByName(String pluginKey) {
+        return pluginKey.equals("com.bftcom.jira-timesheet-export-plugin");
     }
 
     private Collection<String> getProjectsFromSettings() {
