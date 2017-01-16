@@ -90,8 +90,7 @@ public class FinanceProjectImporter {
                         String closed = element.getAttribute("ISCLOSE");
                         if (name != null && !name.equals("") && closed.equals("0")) {
                             String id = element.getAttribute("ID");
-                            String newValue = name + " #" + id;
-                            checkForCustomFieldValue(financeProjectField.getIdAsLong(), newValue);
+                            checkForFinanceProjectOption(financeProjectField, id, name);
                         }
                     }
                 }
@@ -103,16 +102,29 @@ public class FinanceProjectImporter {
         }
     }
 
-    protected Option checkForCustomFieldValue(Long customFieldId, String value) {
-        logger.debug("Start checking combobox values, searching for: " + value);
-        CustomField cf = ComponentAccessor.getComponent(CustomFieldManager.class).getCustomFieldObject(customFieldId);
-        Options options = ComponentAccessor.getOptionsManager().getOptions(cf.getConfigurationSchemes().listIterator().next().getOneAndOnlyConfig());
-        if (options.getOptionForValue(value, null) == null) {
-            logger.debug("Value was not found, need to create value");
-            return addOptionToCustomField(cf, value);
+    protected Option checkForFinanceProjectOption(CustomField customField, String id, String name) {
+        logger.debug("Start checking finance project option, searching for id = " + id + ", name = " + name);
+        Options options = ComponentAccessor.getOptionsManager().getOptions(customField.getConfigurationSchemes().listIterator().next().getOneAndOnlyConfig());
+        String value = name + " #" + id;
+        Option oldValue = null;
+        for (Option option : options) {
+            if (option.getValue() != null && option.getValue().endsWith(id)) {
+                oldValue = option;
+                break;
+            }
         }
-        logger.debug("Value was found");
-        return options.getOptionForValue(value, null);
+        if (oldValue != null) {
+            if (!oldValue.getValue().equalsIgnoreCase(value) && !oldValue.getValue().startsWith(name)) {
+                disableOption(oldValue);
+                return addOptionToCustomField(customField, value);
+            } else {
+                logger.debug("Value was found");
+                return oldValue;
+            }
+        } else {
+            logger.debug("Value was not found, need to create value");
+            return addOptionToCustomField(customField, value);
+        }
     }
 
     public Option addOptionToCustomField(CustomField customField, String value) {
@@ -130,14 +142,19 @@ public class FinanceProjectImporter {
 
                     OptionsManager optionsManager = ComponentAccessor.getOptionsManager();
                     Options l = optionsManager.getOptions(config);
-                    newOption = optionsManager.createOption(config, null,
-                            Long.valueOf(l.size() + 1), // TODO What is this
-                            value);
+                    newOption = optionsManager.createOption(config, null, Long.valueOf(l.size() + 1), value);
                 }
             }
         }
         logger.debug("Finished create new Option for combobox");
         return newOption;
+    }
+
+    public void disableOption(Option option) {
+        logger.debug("Start disabling Option value for combobox, value: " + option.getValue());
+        OptionsManager optionsManager = ComponentAccessor.getOptionsManager();
+        optionsManager.disableOption(option);
+        logger.debug("Finished disabling Option for combobox");
     }
 
     public static FinanceProjectImporter getInstance() {
