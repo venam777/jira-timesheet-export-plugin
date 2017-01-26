@@ -1,7 +1,6 @@
 package com.bftcom.timesheet.export;
 
 import com.atlassian.jira.component.ComponentAccessor;
-import com.atlassian.jira.issue.CustomFieldManager;
 import com.atlassian.jira.issue.customfields.manager.OptionsManager;
 import com.atlassian.jira.issue.customfields.option.Option;
 import com.atlassian.jira.issue.customfields.option.Options;
@@ -86,10 +85,15 @@ public class FinanceProjectImporter {
                     Node t = finprojects.item(index);
                     if (t.getNodeType() == Node.ELEMENT_NODE) {
                         Element element = (Element) t;
+                        String id = element.getAttribute("ID");
                         String name = element.getAttribute("NAME");
                         String closed = element.getAttribute("ISCLOSE");
-                        if (name != null && !name.equals("") && closed.equals("0")) {
-                            String id = element.getAttribute("ID");
+                        if (closed.equals("1")) {
+                            Option option = findById(financeProjectField, id);
+                            if (option != null) {
+                                disableOption(option);
+                            }
+                        } else if (name != null && !name.equals("")) {
                             checkForFinanceProjectOption(financeProjectField, id, name);
                         }
                     }
@@ -106,25 +110,33 @@ public class FinanceProjectImporter {
         logger.debug("Start checking finance project option, searching for id = " + id + ", name = " + name);
         Options options = ComponentAccessor.getOptionsManager().getOptions(customField.getConfigurationSchemes().listIterator().next().getOneAndOnlyConfig());
         String value = name + " #" + id;
-        Option oldValue = null;
-        for (Option option : options) {
-            if (option.getValue() != null && option.getValue().endsWith(id)) {
-                oldValue = option;
-                break;
-            }
-        }
+        Option oldValue = options.getOptionForValue(value, null);
+        //если опция с таким названием уже есть - нам нечего делать, выходим
         if (oldValue != null) {
-            if (!oldValue.getValue().equalsIgnoreCase(value) && !oldValue.getValue().startsWith(name)) {
-                disableOption(oldValue);
-                return addOptionToCustomField(customField, value);
-            } else {
-                logger.debug("Value was found");
-                return oldValue;
-            }
+            enableOption(oldValue);
+            return oldValue;
+        }
+        //если опции с таким названием нет - ищем опцию с этим ид
+        oldValue = findById(customField, id);
+        if (oldValue != null) {
+            logger.debug("Value was found");
+            options.setValue(oldValue, value);
+            enableOption(oldValue);
+            return oldValue;
         } else {
             logger.debug("Value was not found, need to create value");
             return addOptionToCustomField(customField, value);
         }
+    }
+
+    private Option findById(CustomField customField, String id) {
+        Options options = ComponentAccessor.getOptionsManager().getOptions(customField.getConfigurationSchemes().listIterator().next().getOneAndOnlyConfig());
+        for (Option o : options) {
+            if (o.getValue().endsWith("#" + id)) {
+                return o;
+            }
+        }
+        return null;
     }
 
     public Option addOptionToCustomField(CustomField customField, String value) {
@@ -155,6 +167,13 @@ public class FinanceProjectImporter {
         OptionsManager optionsManager = ComponentAccessor.getOptionsManager();
         optionsManager.disableOption(option);
         logger.debug("Finished disabling Option for combobox");
+    }
+
+    public void enableOption(Option option) {
+        logger.debug("Start enabling Option value for combobox, value: " + option.getValue());
+        OptionsManager optionsManager = ComponentAccessor.getOptionsManager();
+        optionsManager.enableOption(option);
+        logger.debug("Finished enabling Option for combobox");
     }
 
     public static FinanceProjectImporter getInstance() {
