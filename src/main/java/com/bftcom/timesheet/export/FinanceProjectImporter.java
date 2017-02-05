@@ -8,6 +8,7 @@ import com.atlassian.jira.issue.fields.CustomField;
 import com.atlassian.jira.issue.fields.config.FieldConfig;
 import com.atlassian.jira.issue.fields.config.FieldConfigScheme;
 import com.bftcom.timesheet.export.utils.Constants;
+import com.bftcom.timesheet.export.utils.JQLUtils;
 import com.bftcom.timesheet.export.utils.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -106,9 +108,27 @@ public class FinanceProjectImporter {
         }
     }
 
+    protected void clearDuplicatesFor(CustomField customField, Option option) {
+        Options options = getOptionsFor(customField);
+        List<Option> duplicates = new LinkedList<>();
+        for (Option o : options) {
+            if (!o.getDisabled() && !option.getDisabled() && o.getValue().equals(option.getValue()) && o.getOptionId() != null && option.getOptionId() != null && !o.getOptionId().equals(option.getOptionId())) {
+                duplicates.add(o);
+            }
+        }
+        if (duplicates.size() > 0) {
+            OptionsManager optionsManager = ComponentAccessor.getOptionsManager();
+            for (Option o : duplicates) {
+                if (JQLUtils.getIssueKeysFromJQLFilter("'Бюджет проекта ПУ' = '" + o.getValue() + "'").size() == 0) {
+                    optionsManager.deleteOptionAndChildren(o);
+                }
+            }
+        }
+    }
+
     protected Option checkForFinanceProjectOption(CustomField customField, String id, String name) {
         logger.debug("Start checking finance project option, searching for id = " + id + ", name = " + name);
-        Options options = ComponentAccessor.getOptionsManager().getOptions(customField.getConfigurationSchemes().listIterator().next().getOneAndOnlyConfig());
+        Options options = getOptionsFor(customField);
         String value = name + " #" + id;
         Option oldValue = options.getOptionForValue(value, null);
         //если опция с таким названием уже есть - нам нечего делать, выходим
@@ -130,7 +150,7 @@ public class FinanceProjectImporter {
     }
 
     private Option findById(CustomField customField, String id) {
-        Options options = ComponentAccessor.getOptionsManager().getOptions(customField.getConfigurationSchemes().listIterator().next().getOneAndOnlyConfig());
+        Options options = getOptionsFor(customField);
         for (Option o : options) {
             if (o.getValue().endsWith("#" + id)) {
                 return o;
@@ -174,6 +194,10 @@ public class FinanceProjectImporter {
         OptionsManager optionsManager = ComponentAccessor.getOptionsManager();
         optionsManager.enableOption(option);
         logger.debug("Finished enabling Option for combobox");
+    }
+
+    private Options getOptionsFor(CustomField customField) {
+        return ComponentAccessor.getOptionsManager().getOptions(customField.getConfigurationSchemes().listIterator().next().getOneAndOnlyConfig());
     }
 
     public static FinanceProjectImporter getInstance() {
