@@ -103,4 +103,9 @@
         <url-pattern>/timesheet-export/config</url-pattern>
     </servlet>
 
+    <rest name="My Rest Resource" i18n-name-key="my-rest-resource.name" key="my-rest-resource" path="/timesheet"
+          version="1.0">
+        <description key="my-rest-resource.description">The My Rest Resource Plugin</description>
+    </rest>
+
 </atlassian-plugin>

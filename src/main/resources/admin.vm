@@ -126,5 +126,12 @@
 ##    таблица
 
 </form>
+<div style="display: none" id="remove-budgets-form">
+    <label for="finance-project-name">Название проекта учета</label>
+    <input type="text" id="finance-project-name">
+    <label for="only-duplicates">Только дубли</label>
+    <input type="checkbox" id="only-duplicates">
+    <input type="button" value="Удалить бюджет" onclick='deleteBudget()'>
+</div>
 </body>
 </html>
