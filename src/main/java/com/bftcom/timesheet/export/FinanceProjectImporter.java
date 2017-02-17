@@ -35,6 +35,7 @@ public class FinanceProjectImporter {
 
     private static FinanceProjectImporter instance = new FinanceProjectImporter();
     private static Logger logger = LoggerFactory.getLogger(FinanceProjectImporter.class);
+    private OptionsManager optionsManager = ComponentAccessor.getOptionsManager();
 
     public void startImport(String dirName) throws ParserConfigurationException, IOException, SAXException {
         logger.debug("import worklogs started");
@@ -128,20 +129,12 @@ public class FinanceProjectImporter {
 
     protected Option checkForFinanceProjectOption(CustomField customField, String id, String name) {
         logger.debug("Start checking finance project option, searching for id = " + id + ", name = " + name);
-        Options options = getOptionsFor(customField);
         String value = name + " #" + id;
-        Option oldValue = options.getOptionForValue(value, null);
-        //если опция с таким названием уже есть - нам нечего делать, выходим
+        Option oldValue = findById(customField, id);
+        //если опция с таким id уже есть - нам нечего делать, выходим
         if (oldValue != null) {
-            enableOption(oldValue);
-            return oldValue;
-        }
-        //если опции с таким названием нет - ищем опцию с этим ид
-        oldValue = findById(customField, id);
-        if (oldValue != null) {
-            logger.debug("Value was found");
-            options.setValue(oldValue, value);
-            enableOption(oldValue);
+            logger.debug("Value with id was found, updating value");
+            optionsManager.setValue(oldValue, value);
             return oldValue;
         } else {
             logger.debug("Value was not found, need to create value");
@@ -151,9 +144,19 @@ public class FinanceProjectImporter {
 
     private Option findById(CustomField customField, String id) {
         Options options = getOptionsFor(customField);
+        String idStr = '#' + id;
         for (Option o : options) {
-            if (o.getValue().endsWith("#" + id)) {
+            if (o.getValue().endsWith(idStr) && !o.getDisabled()) {
                 return o;
+            }
+        }
+        return null;
+    }
+
+    private Option findByValue(Options options, String value) {
+        for (Option option : options) {
+            if (!option.getDisabled() && option.getValue().equalsIgnoreCase(value)) {
+                return option;
             }
         }
         return null;
