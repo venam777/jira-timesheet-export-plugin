@@ -11,7 +11,10 @@ import com.atlassian.jira.issue.worklog.WorklogManager;
 import com.atlassian.jira.issue.worklog.WorklogStore;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.user.ApplicationUser;
+import com.bftcom.timesheet.export.dto.IssueDTO;
+import com.bftcom.timesheet.export.dto.WorklogDTO;
 import com.bftcom.timesheet.export.entity.WorklogData;
+import com.bftcom.timesheet.export.provider.WorklogProvider;
 import com.bftcom.timesheet.export.utils.Constants;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
@@ -37,6 +40,7 @@ public class WorklogExporter {
     private WorklogManager manager;
     private WorklogDataDao dao;
     private CustomField financeProjectField;
+    private WorklogProvider worklogProvider;
 
     //private Long financeProjectFieldId = 12500L;
     private static WorklogExporter instance;
@@ -46,6 +50,7 @@ public class WorklogExporter {
         this.dao = dao;
         manager = ComponentAccessor.getWorklogManager();
         financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName(Constants.financeProjectFieldName);
+        worklogProvider = new WorklogProvider();
     }
 
     public void exportWorklog(WorklogExportParams params) throws TransformerException, ParserConfigurationException, IOException {
@@ -54,7 +59,7 @@ public class WorklogExporter {
 
     public void exportWorklog(WorklogExportParams params, String fileNameWithPath) throws TransformerException, ParserConfigurationException, IOException {
         logger.debug("Worklog export started");
-        Collection<Worklog> updatedWorklogs = getUpdatedWorklogs(params);
+        Collection<WorklogDTO> updatedWorklogs = getWorklogs(params);
         logger.debug("updated worklogs count to xml = " + updatedWorklogs.size());
         Collection<DeletedWorklog> deletedWorklogs = getDeletedWorklogs(params);
         logger.debug("deleted worklogs count to xml = " + deletedWorklogs.size());
@@ -74,13 +79,13 @@ public class WorklogExporter {
         bodyElement.appendChild(rplElement);
 
         //fill issue information
-        Collection<Issue> issues = getWorklogIssues(updatedWorklogs);
+        //Collection<Issue> issues = worklogProvider.getWorklogIssues(updatedWorklogs);
         Element issueRootElement = doc.createElement("CONTROL");
         rplElement.appendChild(issueRootElement);
         addAttribute(doc, issueRootElement, "RPL_OBJ_NAME", "CONTROL");
         Element updatedIssues = doc.createElement("CHANGED");
         issueRootElement.appendChild(updatedIssues);
-        for (Issue issue : issues) {
+        for (IssueDTO issue : getIssues(updatedWorklogs)) {
             Element control = doc.createElement("CONTROL");
             addAttribute(doc, control, "ID", issue.getKey());
             addAttribute(doc, control, "CAPTION", issue.getKey() + " " + issue.getSummary());
@@ -102,29 +107,29 @@ public class WorklogExporter {
         Element deletedTimesheets = doc.createElement("DELETED");
         timesheetRootElement.appendChild(deletedTimesheets);
 
-        for (Worklog worklog : updatedWorklogs) {
+        for (WorklogDTO worklog : updatedWorklogs) {
             Element timesheet = doc.createElement("TIMESHEET");
             logger.debug("writing updated worklog in xml");
-            addAttribute(doc, timesheet, "ID", worklog.getId().toString());
-            addAttribute(doc, timesheet, "ISSUE_ID", worklog.getIssue().getId().toString());
+            addAttribute(doc, timesheet, "ID", String.valueOf(worklog.getId()));
+            addAttribute(doc, timesheet, "ISSUE_ID", String.valueOf(worklog.getIssue().getId()));
             addAttribute(doc, timesheet, "CONTROLID", worklog.getIssue().getKey());
-            Double spentTimeHours = (double) worklog.getTimeSpent() / 60 / 60;
+            Double spentTimeHours = (double) worklog.getTimeworked() / 60 / 60;
             String amount = String.valueOf((double) Math.round(spentTimeHours * 100) / 100);
             addAttribute(doc, timesheet, "AMOUNT", amount);
-            addAttribute(doc, timesheet, "REMARK", Parser.parseWorklogComment(worklog.getComment()));
-            addAttribute(doc, timesheet, "WORKDATE", Settings.dateFormat.format(worklog.getStartDate()));
-            addAttribute(doc, timesheet, "PROJECTID", worklog.getIssue().getProjectObject().getId().toString());
-            addAttribute(doc, timesheet, "LDAPID", "BFT\\" + worklog.getAuthorObject().getUsername());
+            addAttribute(doc, timesheet, "REMARK", Parser.parseWorklogComment(worklog.getBody()));
+            addAttribute(doc, timesheet, "WORKDATE", Settings.dateFormat.format(worklog.getDateCreated()));
+            addAttribute(doc, timesheet, "PROJECTID", String.valueOf(worklog.getProject().getId()));
+            addAttribute(doc, timesheet, "LDAPID", "BFT\\" + worklog.getAuthorName());
             logger.debug("worklog params: id = " + worklog.getId() + ", issue.id = " + worklog.getIssue().getId()
-                    + ", amount = " + amount + ", comment = " + worklog.getComment() + ", workdate = " + Settings.dateFormat.format(worklog.getStartDate())
-                    + ", project.id = " + worklog.getIssue().getProjectObject().getId().toString());
+                    + ", amount = " + amount + ", comment = " + worklog.getBody() + ", workdate = " + Settings.dateFormat.format(worklog.getDateCreated())
+                    + ", project.id = " + String.valueOf(worklog.getProject().getId()));
             String financeProjectId = getFinanceProjectId(worklog.getIssue());
             if (financeProjectId != null) {
                 addAttribute(doc, timesheet, "FINPROJECTID", financeProjectId);
                 logger.debug("worklog finance_project.id = " + financeProjectId);
             }
 
-            WorklogData info = dao.get(worklog.getId(), true);
+            WorklogData info = dao.get((long) worklog.getId(), true);
             addAttribute(doc, timesheet, "REJECT_COMMENT", info.getRejectComment());
             addAttribute(doc, timesheet, "STATUS", info.getStatus());
             logger.debug(" reject comment = " + info.getRejectComment());
@@ -161,6 +166,10 @@ public class WorklogExporter {
         logger.debug("export finished successfully");
     }
 
+    private String getFinanceProjectId(IssueDTO issue) {
+        return issue.getFinanceProjectName() != null ? issue.getFinanceProjectName().substring(issue.getFinanceProjectName().lastIndexOf("#") + 1) : null;
+    }
+
     private String getFinanceProjectId(Issue issue) {
         if (financeProjectField != null) {
             Option option = (Option) issue.getCustomFieldValue(financeProjectField);
@@ -175,6 +184,10 @@ public class WorklogExporter {
             }
         }
         return null;
+    }
+
+    private Collection<WorklogDTO> getWorklogs(WorklogExportParams params) {
+        return worklogProvider.getWorklogs(params, financeProjectField.getIdAsLong());
     }
 
     private Collection<Worklog> getUpdatedWorklogs(WorklogExportParams exportParams) {
@@ -248,6 +261,14 @@ public class WorklogExporter {
         return result;
     }
 
+    private Collection<IssueDTO> getIssues(Collection<WorklogDTO> worklogs) {
+        Map<Integer, IssueDTO> result = new HashMap<>();
+        for (WorklogDTO worklog : worklogs) {
+            result.put(worklog.getIssue().getId(), worklog.getIssue());
+        }
+        return result.values();
+    }
+
     private Collection<DeletedWorklog> getDeletedWorklogs(WorklogExportParams exportParams) {
         Date dateFrom = new Date();
         if (exportParams.getStartDate() != null) {
@@ -283,7 +304,7 @@ public class WorklogExporter {
         return null;
     }
 
-    private String getShortIssueUrl(Issue issue) {
+    private String getShortIssueUrl(IssueDTO issue) {
         return ComponentAccessor.getApplicationProperties().getString("jira.baseurl") + "/browse/" + issue.getKey();
     }
 
