@@ -50,7 +50,7 @@ public class WorklogExporter {
         this.dao = dao;
         manager = ComponentAccessor.getWorklogManager();
         financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName(Constants.financeProjectFieldName);
-        worklogProvider = new WorklogProvider();
+        worklogProvider = new WorklogProvider(dao);
     }
 
     public void exportWorklog(WorklogExportParams params) throws TransformerException, ParserConfigurationException, IOException {
@@ -235,7 +235,7 @@ public class WorklogExporter {
                 logger.debug("Deleting worklog (user), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
                 return true;
             }
-            if (!exportParams.isIncludeAllStatuses() && !dao.isWorklogExportable(w)) {
+            if (!exportParams.isIncludeAllStatuses() && !dao.isWorklogExportable(w.getId())) {
                 logger.debug("Deleting worklog (status), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
                 return true;
             }

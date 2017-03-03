@@ -12,6 +12,7 @@ import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.util.JiraDurationUtils;
+import com.bftcom.timesheet.export.dto.WorklogDTO;
 import com.bftcom.timesheet.export.entity.WorklogData;
 import com.bftcom.timesheet.export.utils.Parser;
 import net.java.ao.Query;
@@ -51,8 +52,8 @@ public class WorklogDataDao {
         return getWorklogStatus(worklog.getId()).equals(WorklogData.APPROVED_STATUS);
     }
 
-    public synchronized boolean isWorklogExportable(Worklog worklog) {
-        String worklogStatus = getWorklogStatus(worklog.getId());
+    public synchronized boolean isWorklogExportable(Long worklogId) {
+        String worklogStatus = getWorklogStatus(worklogId);
         return worklogStatus.equals("") || worklogStatus.equals(WorklogData.NOT_VIEWED_STATUS);
     }
 

@@ -1,5 +1,6 @@
 package com.bftcom.timesheet.export.provider;
 
+import com.bftcom.timesheet.export.WorklogDataDao;
 import com.bftcom.timesheet.export.WorklogExportParams;
 import com.bftcom.timesheet.export.dto.IssueDTO;
 import com.bftcom.timesheet.export.dto.ProjectDTO;
@@ -24,6 +25,12 @@ public class WorklogProvider {
 
         TO convert(FROM source);
 
+    }
+
+    private WorklogDataDao worklogDataDao;
+
+    public WorklogProvider(WorklogDataDao worklogDataDao) {
+        this.worklogDataDao = worklogDataDao;
     }
 
     public Collection<WorklogDTO> getWorklogs(WorklogExportParams params, Long financeProjectFieldId) {
@@ -57,7 +64,9 @@ public class WorklogProvider {
                 ProjectDTO project = new ProjectDTO(resultSet.getInt("project_id"), resultSet.getString("project_key"));
                 WorklogDTO worklog = new WorklogDTO(resultSet.getInt("worklog_id"), resultSet.getString("worklog_author"),
                         resultSet.getString("worklog_body"), resultSet.getDate("worklog_created"), resultSet.getLong("worklog_timeworked"), issue, project);
-                result.add(worklog);
+                if (params.isIncludeAllStatuses() || worklogDataDao.isWorklogExportable(worklog.getId())) {
+                    result.add(worklog);
+                }
             }
         } catch (GenericEntityException | SQLException e) {
             e.printStackTrace();

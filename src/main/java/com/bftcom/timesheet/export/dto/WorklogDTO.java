@@ -7,7 +7,7 @@ import java.util.Date;
  */
 public class WorklogDTO {
 
-    private int id;
+    private long id;
     private String authorName;
     private String body;
     private Date dateCreated;
@@ -15,7 +15,7 @@ public class WorklogDTO {
     private IssueDTO issue;
     private ProjectDTO project;
 
-    public WorklogDTO(int id, String authorName, String body, Date dateCreated, Long timeworked, IssueDTO issue, ProjectDTO project) {
+    public WorklogDTO(long id, String authorName, String body, Date dateCreated, Long timeworked, IssueDTO issue, ProjectDTO project) {
         this.id = id;
         this.authorName = authorName;
         this.body = body;
@@ -25,7 +25,7 @@ public class WorklogDTO {
         this.project = project;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
