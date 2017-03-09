@@ -14,10 +14,16 @@ import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.util.JiraDurationUtils;
 import com.bftcom.timesheet.export.dto.WorklogDTO;
 import com.bftcom.timesheet.export.entity.WorklogData;
+import com.bftcom.timesheet.export.utils.Converter;
 import com.bftcom.timesheet.export.utils.Parser;
+import com.bftcom.timesheet.export.utils.SQLUtils;
 import net.java.ao.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 //@Component
 public class WorklogDataDao {
@@ -115,6 +121,15 @@ public class WorklogDataDao {
             return create(worklogId);
         }
         return null;
+    }
+
+    protected Map<Long, WorklogData> getWorklogData(Collection<WorklogDTO> worklogs) {
+        WorklogData[] mass = activeObjects.find(WorklogData.class, Query.select().where("WORKLOG_ID in ?", SQLUtils.collectionToString(worklogs, source -> source.getId().toString())));
+        Map<Long, WorklogData> result = new HashMap<>();
+        for (WorklogData data : mass) {
+            result.put(data.getWorklogId(), data);
+        }
+        return result;
     }
 
     protected void onWorklogStatusChanged(Long worklogId) {

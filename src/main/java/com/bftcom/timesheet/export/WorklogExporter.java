@@ -17,6 +17,7 @@ import com.bftcom.timesheet.export.entity.WorklogData;
 import com.bftcom.timesheet.export.provider.WorklogProvider;
 import com.bftcom.timesheet.export.utils.Constants;
 import com.bftcom.timesheet.export.utils.Parser;
+import com.bftcom.timesheet.export.utils.SQLUtils;
 import com.bftcom.timesheet.export.utils.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +108,7 @@ public class WorklogExporter {
         Element deletedTimesheets = doc.createElement("DELETED");
         timesheetRootElement.appendChild(deletedTimesheets);
 
+//        Map<Long, WorklogData> worklogDataMap = dao.getWorklogData(updatedWorklogs);
         for (WorklogDTO worklog : updatedWorklogs) {
             Element timesheet = doc.createElement("TIMESHEET");
             logger.debug("writing updated worklog in xml");
@@ -130,6 +132,7 @@ public class WorklogExporter {
             }
 
             WorklogData info = dao.get((long) worklog.getId(), true);
+//            WorklogData info = worklogDataMap.get(worklog.getId());
             addAttribute(doc, timesheet, "REJECT_COMMENT", info.getRejectComment());
             addAttribute(doc, timesheet, "STATUS", info.getStatus());
             logger.debug(" reject comment = " + info.getRejectComment());
@@ -155,7 +158,7 @@ public class WorklogExporter {
         DOMSource source = new DOMSource(doc);
         logger.debug("Export file path: " + fileNameWithPath);
         String fileName = fileNameWithPath.substring(fileNameWithPath.lastIndexOf(File.separator) + 1);
-        /*String path = fileNameWithPath.substring(0, fileNameWithPath.lastIndexOf(File.separator));
+        String path = fileNameWithPath.substring(0, fileNameWithPath.lastIndexOf(File.separator));
         logger.debug("file directory: " + path);
         logger.debug("file name : " + fileName);
         File file = new File(path, fileName);
@@ -163,7 +166,7 @@ public class WorklogExporter {
         StreamResult result = new StreamResult(file);
         transformer.transform(source, result);
 
-        logger.debug("export finished successfully");*/
+        logger.debug("export finished successfully");
     }
 
     private String getFinanceProjectId(IssueDTO issue) {

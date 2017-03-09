@@ -92,11 +92,16 @@ public class FinanceProjectImporter {
                         String name = element.getAttribute("NAME");
                         String closed = element.getAttribute("ISCLOSE");
                         if (closed.equals("1")) {
+                            logger.debug("Finproject " + id + " is closed");
                             Option option = findById(financeProjectField, id);
                             if (option != null) {
+                                logger.debug("Disabling finptoject " + id);
                                 disableOption(option);
+                            } else {
+                                logger.debug("Finproject " + id + " was not found or it is disabled");
                             }
                         } else if (name != null && !name.equals("")) {
+                            logger.debug("Finproject " + id + " is open");
                             checkForFinanceProjectOption(financeProjectField, id, name);
                         }
                     }
@@ -147,7 +152,7 @@ public class FinanceProjectImporter {
         Options options = getOptionsFor(customField);
         String idStr = '#' + id;
         for (Option o : options) {
-            if (o.getValue().endsWith(idStr)) {
+            if (o.getValue().endsWith(idStr) && !o.getDisabled()) {
                 return o;
             }
         }
