@@ -117,11 +117,11 @@ public class WorklogExporter {
             String amount = String.valueOf((double) Math.round(spentTimeHours * 100) / 100);
             addAttribute(doc, timesheet, "AMOUNT", amount);
             addAttribute(doc, timesheet, "REMARK", Parser.parseWorklogComment(worklog.getBody()));
-            addAttribute(doc, timesheet, "WORKDATE", Settings.dateFormat.format(worklog.getDateCreated()));
+            addAttribute(doc, timesheet, "WORKDATE", Settings.dateFormat.format(worklog.getDateWorked()));
             addAttribute(doc, timesheet, "PROJECTID", String.valueOf(worklog.getProject().getId()));
             addAttribute(doc, timesheet, "LDAPID", "BFT\\" + worklog.getAuthorName());
             logger.debug("worklog params: id = " + worklog.getId() + ", issue.id = " + worklog.getIssue().getId()
-                    + ", amount = " + amount + ", comment = " + worklog.getBody() + ", workdate = " + Settings.dateFormat.format(worklog.getDateCreated())
+                    + ", amount = " + amount + ", comment = " + worklog.getBody() + ", workdate = " + Settings.dateFormat.format(worklog.getDateWorked())
                     + ", project.id = " + String.valueOf(worklog.getProject().getId()));
             String financeProjectId = getFinanceProjectId(worklog.getIssue());
             if (financeProjectId != null) {
@@ -155,7 +155,7 @@ public class WorklogExporter {
         DOMSource source = new DOMSource(doc);
         logger.debug("Export file path: " + fileNameWithPath);
         String fileName = fileNameWithPath.substring(fileNameWithPath.lastIndexOf(File.separator) + 1);
-        String path = fileNameWithPath.substring(0, fileNameWithPath.lastIndexOf(File.separator));
+        /*String path = fileNameWithPath.substring(0, fileNameWithPath.lastIndexOf(File.separator));
         logger.debug("file directory: " + path);
         logger.debug("file name : " + fileName);
         File file = new File(path, fileName);
@@ -163,7 +163,7 @@ public class WorklogExporter {
         StreamResult result = new StreamResult(file);
         transformer.transform(source, result);
 
-        logger.debug("export finished successfully");
+        logger.debug("export finished successfully");*/
     }
 
     private String getFinanceProjectId(IssueDTO issue) {

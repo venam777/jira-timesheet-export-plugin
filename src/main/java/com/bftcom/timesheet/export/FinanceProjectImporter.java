@@ -135,6 +135,7 @@ public class FinanceProjectImporter {
         if (oldValue != null) {
             logger.debug("Value with id was found, updating value");
             optionsManager.setValue(oldValue, value);
+            enableOption(oldValue);
             return oldValue;
         } else {
             logger.debug("Value was not found, need to create value");
@@ -146,7 +147,7 @@ public class FinanceProjectImporter {
         Options options = getOptionsFor(customField);
         String idStr = '#' + id;
         for (Option o : options) {
-            if (o.getValue().endsWith(idStr) && !o.getDisabled()) {
+            if (o.getValue().endsWith(idStr)) {
                 return o;
             }
         }

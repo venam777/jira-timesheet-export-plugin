@@ -10,16 +10,16 @@ public class WorklogDTO {
     private long id;
     private String authorName;
     private String body;
-    private Date dateCreated;
+    private Date dateWorked;
     private Long timeworked;
     private IssueDTO issue;
     private ProjectDTO project;
 
-    public WorklogDTO(long id, String authorName, String body, Date dateCreated, Long timeworked, IssueDTO issue, ProjectDTO project) {
+    public WorklogDTO(long id, String authorName, String body, Date dateWorked, Long timeworked, IssueDTO issue, ProjectDTO project) {
         this.id = id;
         this.authorName = authorName;
         this.body = body;
-        this.dateCreated = dateCreated;
+        this.dateWorked = dateWorked;
         this.timeworked = timeworked;
         this.issue = issue;
         this.project = project;
@@ -37,8 +37,8 @@ public class WorklogDTO {
         return body;
     }
 
-    public Date getDateCreated() {
-        return dateCreated;
+    public Date getDateWorked() {
+        return dateWorked;
     }
 
     public Long getTimeworked() {

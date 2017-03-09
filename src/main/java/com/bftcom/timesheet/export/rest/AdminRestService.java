@@ -5,6 +5,7 @@ import com.atlassian.jira.issue.customfields.manager.OptionsManager;
 import com.atlassian.jira.issue.customfields.option.Option;
 import com.atlassian.jira.issue.customfields.option.Options;
 import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 import com.bftcom.timesheet.export.utils.Constants;
 import com.bftcom.timesheet.export.utils.JQLUtils;
@@ -22,10 +23,14 @@ public class AdminRestService {
 
     @DELETE
     @Path("/financeproject")
-    @AnonymousAllowed
+    //@AnonymousAllowed
     @Produces({MediaType.APPLICATION_JSON})
     public Response deleteFinanceProject(@QueryParam("name") String name, @QueryParam("onlyDuplicates") boolean onlyDuplicates) {
-        OptionsManager optionsManager = ComponentAccessor.getOptionsManager();
+        ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+        if (user == null || !ComponentAccessor.getGroupManager().isUserInGroup(user, "jira-administrators")) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        /*OptionsManager optionsManager = ComponentAccessor.getOptionsManager();
         CustomField financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName(Constants.financeProjectFieldName);
         Options options = getOptionsFor(financeProjectField);
         List<Option> optionList = optionsManager.findByOptionValue(name);
@@ -44,7 +49,8 @@ public class AdminRestService {
                 count++;
             }
         }
-        return Response.ok(count).build();
+        return Response.ok(count).build();*/
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
     }
 
     private boolean optionHasIssues(Option option) {
@@ -53,6 +59,11 @@ public class AdminRestService {
 
     private Options getOptionsFor(CustomField customField) {
         return ComponentAccessor.getOptionsManager().getOptions(customField.getConfigurationSchemes().listIterator().next().getOneAndOnlyConfig());
+    }
+
+    private boolean isUserAdmin(String userName) {
+        ApplicationUser user = ComponentAccessor.getUserManager().getUserByName(userName);
+        return user != null && ComponentAccessor.getGroupManager().isUserInGroup(user, "jira-administrators");
     }
 
 }

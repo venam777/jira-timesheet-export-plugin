@@ -39,7 +39,7 @@ public class WorklogProvider {
         SQLProcessor sqlProcessor = new SQLProcessor("defaultDS");
         List<WorklogDTO> result = new LinkedList<>();
         try {
-            String select = "select w.id as worklog_id, w.author as worklog_author, w.worklogbody as worklog_body, w.created as worklog_created, w.timeworked as worklog_timeworked, i.id as issue_id, i.issuenum as issue_num, i.summary issue_summary, p.id as project_id, p.pkey as project_key, cfo.customvalue as finproject_name ";
+            String select = "select w.id as worklog_id, w.author as worklog_author, w.worklogbody as worklog_body, w.startdate as worklog_startdate, w.timeworked as worklog_timeworked, i.id as issue_id, i.issuenum as issue_num, i.summary issue_summary, p.id as project_id, p.pkey as project_key, cfo.customvalue as finproject_name ";
             String from = " from worklog w join jiraissue i on w.issueid = i.id join project p on i.project = p.id left join customfieldvalue cf on i.id = cf.issue and cf.customfield = ? left join customfieldoption cfo on cf.stringvalue = cfo.id";
             String where = " where (w.startdate BETWEEN ? and ? or w.created BETWEEN ? and ?)";
             if (params.getProjects() != null && params.getProjects().size() > 0) {
@@ -63,7 +63,7 @@ public class WorklogProvider {
                         resultSet.getString("issue_summary"), resultSet.getString("finproject_name"));
                 ProjectDTO project = new ProjectDTO(resultSet.getInt("project_id"), resultSet.getString("project_key"));
                 WorklogDTO worklog = new WorklogDTO(resultSet.getInt("worklog_id"), resultSet.getString("worklog_author"),
-                        resultSet.getString("worklog_body"), resultSet.getDate("worklog_created"), resultSet.getLong("worklog_timeworked"), issue, project);
+                        resultSet.getString("worklog_body"), resultSet.getDate("worklog_startdate"), resultSet.getLong("worklog_timeworked"), issue, project);
                 if (params.isIncludeAllStatuses() || worklogDataDao.isWorklogExportable(worklog.getId())) {
                     result.add(worklog);
                 }
