@@ -1,5 +1,6 @@
 ##groupid.artifactid.web-resource-key
-#requireResource("com.bftcom.jira-timesheet-export-plugin:jira-timesheet-export-plugin-resources")
+###requireResource("com.bftcom.jira-timesheet-export-plugin:jira-timesheet-export-plugin-resources")
+$webResourceManager.requireResourcesForContext("timesheet-export-admin-resources")
 ##todo i18n
 <html>
 <head>

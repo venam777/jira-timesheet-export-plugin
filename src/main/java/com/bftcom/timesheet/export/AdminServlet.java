@@ -111,6 +111,7 @@ public class AdminServlet extends HttpServlet {
         JobDetails exportDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerService.class).getJobDetails(JobId.of(Settings.exportJobId));
         JobDetails importDetails = ComponentAccessor.getOSGiComponentInstanceOfType(SchedulerService.class).getJobDetails(JobId.of(Settings.importJobId));
         params.put("runningInAutoMode", exportDetails != null && exportDetails.getNextRunTime() != null && importDetails != null && importDetails.getNextRunTime() != null);
+        params.put("webResourceManager", ComponentAccessor.getWebResourceManager());
         //todo default param?
         //params.put("exportType", Settings.get("exportType"));
         logger.debug("form parametrs : " + params);

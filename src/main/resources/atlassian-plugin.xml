@@ -23,7 +23,7 @@
         <resource type="download" key="jira-timesheet-export-plugin.js" name="jira-timesheet-export-plugin.js"
                   location="/js/jira-timesheet-export-plugin.js"/>
         <resource type="download" name="images/" location="/images"/>
-        <context>atl.admin</context>
+        <context>timesheet-export-admin-resources</context>
     </web-resource>
 
     <web-resource key="timesheet-plugin-worklog-resources" name="timesheet-plugin-worklog-resources">
