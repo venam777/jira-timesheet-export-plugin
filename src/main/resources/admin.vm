@@ -4,7 +4,7 @@ $webResourceManager.requireResourcesForContext("timesheet-export-admin-resources
 ##todo i18n
 <html>
 <head>
-    <title>XProduct Admin</title>
+    <title>Настройка экспорта\импорта трудозатрат</title>
     <meta name="decorator" content="atl.admin">
     <link href="css/jira-timesheet-export-plugin.css" rel="stylesheet" type="text/css">
     <script src="js/jira-timesheet-export-plugin.js"></script>
