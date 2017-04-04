@@ -48,19 +48,23 @@ public class WorklogDataDao {
     public synchronized static WorklogDataDao getInstance() {
         return instance;
     }
-    /**
-     * ВОзвращает true, если worklog можно изменять
-     *
-     * @param worklog
-     * @return
-     */
-    public boolean isWorklogMutable(Worklog worklog) {
-        return getWorklogStatus(worklog.getId()).equals(WorklogData.APPROVED_STATUS);
-    }
 
+    @Deprecated
     public synchronized boolean isWorklogExportable(Long worklogId) {
-        String worklogStatus = getWorklogStatus(worklogId);
-        return worklogStatus.equals("") || worklogStatus.equals(WorklogData.NOT_VIEWED_STATUS);
+        logger.debug("Is worklog id = " + worklogId + " exportable?");
+        WorklogData data = get(worklogId, false);
+        String worklogStatus = data != null ? data.getStatus() : "";
+        boolean result = data == null || !data.isExported() && (worklogStatus == null || worklogStatus.equals("") || worklogStatus.equals(WorklogData.NOT_VIEWED_STATUS));
+        logger.debug("data = " + (data != null ? data : "null") + "; data.isExported = " + (data != null ? data.isExported() : "false" + "; worklogStatus = " + worklogStatus));
+        logger.debug("Result = " + result);
+        return result;
+        /*String worklogStatus = getWorklogStatus(worklogId);
+        return worklogStatus.equals("") || worklogStatus.equals(WorklogData.NOT_VIEWED_STATUS);*/
+        /*
+         WorklogData data = get(worklogId, false);
+        String worklogStatus = data != null ? data.getStatus() : "";
+        return data == null || !data.isExported() && (worklogStatus == null || worklogStatus.equals("") || worklogStatus.equals(WorklogData.NOT_VIEWED_STATUS));
+         */
     }
 
     public String getWorklogStatus(Long worklogId) {
@@ -75,6 +79,10 @@ public class WorklogDataDao {
             data.setStatus(status);
             if (rejectComment != null) {
                 data.setRejectComment(rejectComment);
+            }
+            if (status.equalsIgnoreCase(WorklogData.REJECTED_STATUS) || status.equalsIgnoreCase(WorklogData.NOT_VIEWED_STATUS)) {
+                logger.debug("Set exported = false");
+                data.setExported(false);
             }
             data.save();
             onWorklogStatusChanged(worklogId);
@@ -94,6 +102,16 @@ public class WorklogDataDao {
         }
         logger.debug("updating worklog data, status = " + status + ", rejectComment = " + rejectComment);
         setWorklogStatus(worklogId, status, rejectComment);
+    }
+
+    public void setExported(WorklogData data, boolean exported) {
+        if (data != null) {
+            activeObjects.executeInTransaction(() -> {
+                data.setExported(exported);
+                data.save();
+                return data;
+            });
+        }
     }
 
     protected synchronized WorklogData create(Long worklogId) {

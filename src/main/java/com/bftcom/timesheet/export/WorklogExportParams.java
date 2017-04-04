@@ -19,6 +19,7 @@ public class WorklogExportParams {
     private Date startDate;
     private Date endDate;
     private boolean includeAllStatuses;
+    private boolean ignoreExportedFlag;
     //todo
     //бюджеты
 
@@ -47,6 +48,11 @@ public class WorklogExportParams {
 
     public WorklogExportParams includeAllStatuses(boolean includeAllStatuses) {
         this.includeAllStatuses = includeAllStatuses;
+        return this;
+    }
+
+    public WorklogExportParams ignoreExportedFlag(boolean ignoreExportedFlag) {
+        this.ignoreExportedFlag = ignoreExportedFlag;
         return this;
     }
 
@@ -92,5 +98,9 @@ public class WorklogExportParams {
 
     public boolean isIncludeAllStatuses() {
         return includeAllStatuses;
+    }
+
+    public boolean isIgnoreExportedFlag() {
+        return ignoreExportedFlag;
     }
 }

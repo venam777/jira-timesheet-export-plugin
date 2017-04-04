@@ -9,6 +9,8 @@ import com.bftcom.timesheet.export.utils.SQLUtils;
 import org.ofbiz.core.entity.GenericDataSourceException;
 import org.ofbiz.core.entity.GenericEntityException;
 import org.ofbiz.core.entity.jdbc.SQLProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.Collection;
@@ -59,9 +61,10 @@ public class WorklogProvider {
                 ProjectDTO project = new ProjectDTO(resultSet.getInt("project_id"), resultSet.getString("project_key"));
                 WorklogDTO worklog = new WorklogDTO(resultSet.getInt("worklog_id"), resultSet.getString("worklog_author"),
                         resultSet.getString("worklog_body"), resultSet.getDate("worklog_startdate"), resultSet.getLong("worklog_timeworked"), issue, project);
-                if (params.isIncludeAllStatuses() || worklogDataDao.isWorklogExportable(worklog.getId())) {
-                    result.add(worklog);
-                }
+                result.add(worklog);
+//                if (params.isIncludeAllStatuses() || worklogDataDao.isWorklogExportable(worklog.getId())) {
+//                    result.add(worklog);
+//                }
             }
             //}
         } catch (GenericEntityException | SQLException e) {

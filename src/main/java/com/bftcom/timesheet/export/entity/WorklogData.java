@@ -20,4 +20,7 @@ public interface WorklogData extends Entity {
     String getRejectComment();
     void setRejectComment(String rejectComment);
 
+    boolean isExported();
+    void setExported(boolean exported);
+
 }

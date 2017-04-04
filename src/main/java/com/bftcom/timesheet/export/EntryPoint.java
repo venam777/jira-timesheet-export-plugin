@@ -142,7 +142,7 @@ public class EntryPoint {
         Collection<String> users = Arrays.asList(event.getUserNames());
         logger.debug("users = " + users);
         WorklogExportParams exportParams = new WorklogExportParams(event.startDate, event.endDate).projects(projects)
-                .users(users).includeAllStatuses(event.isIncludeAllStatuses());
+                .users(users).includeAllStatuses(event.isIncludeAllStatuses()).ignoreExportedFlag(true);
         try {
             WorklogExporter.getInstance().exportWorklog(exportParams);
         } catch (TransformerException | ParserConfigurationException | IOException e) {

@@ -61,7 +61,7 @@ public class WorklogExporter {
     public void exportWorklog(WorklogExportParams params, String fileNameWithPath) throws TransformerException, ParserConfigurationException, IOException {
         logger.debug("Worklog export started");
         Collection<WorklogDTO> updatedWorklogs = getWorklogs(params);
-        logger.debug("updated worklogs count to xml = " + updatedWorklogs.size());
+        logger.debug("updated worklogs count (without status condition) to xml = " + updatedWorklogs.size());
         Collection<DeletedWorklog> deletedWorklogs = getDeletedWorklogs(params);
         logger.debug("deleted worklogs count to xml = " + deletedWorklogs.size());
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -107,9 +107,21 @@ public class WorklogExporter {
 
         Element deletedTimesheets = doc.createElement("DELETED");
         timesheetRootElement.appendChild(deletedTimesheets);
-
+        Collection<WorklogData> updatedTimesheetsData = new LinkedList<>();
 //        Map<Long, WorklogData> worklogDataMap = dao.getWorklogData(updatedWorklogs);
         for (WorklogDTO worklog : updatedWorklogs) {
+            WorklogData info = dao.get(worklog.getId(), true);
+            if (info != null) {
+                if (!params.isIncludeAllStatuses() && info.getStatus().equalsIgnoreCase(WorklogData.APPROVED_STATUS)) {
+                    logger.debug("Skipping worklog id = " + info.getWorklogId() + " because not includeAllStatuses and worklog status = APPROVED");
+                    continue;
+                }
+                if (!params.isIgnoreExportedFlag() && info.isExported()) {
+                    logger.debug("Skipping worklog id = " + info.getWorklogId() + " because not ignoreExportedFlag and exported = true");
+                    continue;
+                }
+            }
+            logger.debug("All is ok, we must export worklog with id = " + worklog.getId());
             Element timesheet = doc.createElement("TIMESHEET");
             logger.debug("writing updated worklog in xml");
             addAttribute(doc, timesheet, "ID", String.valueOf(worklog.getId()));
@@ -130,15 +142,12 @@ public class WorklogExporter {
                 addAttribute(doc, timesheet, "FINPROJECTID", financeProjectId);
                 logger.debug("worklog finance_project.id = " + financeProjectId);
             }
-
-            WorklogData info = dao.get((long) worklog.getId(), true);
-//            WorklogData info = worklogDataMap.get(worklog.getId());
             addAttribute(doc, timesheet, "REJECT_COMMENT", info.getRejectComment());
             addAttribute(doc, timesheet, "STATUS", info.getStatus());
             logger.debug(" reject comment = " + info.getRejectComment());
             logger.debug(" status = " + info.getStatus());
-
             updatedTimesheets.appendChild(timesheet);
+            updatedTimesheetsData.add(info);
         }
 
         for (DeletedWorklog worklog : deletedWorklogs) {
@@ -165,7 +174,9 @@ public class WorklogExporter {
         file.createNewFile();
         StreamResult result = new StreamResult(file);
         transformer.transform(source, result);
-
+        for (WorklogData worklogData : updatedTimesheetsData) {
+            dao.setExported(worklogData, true);
+        }
         logger.debug("export finished successfully");
     }
 
@@ -191,77 +202,6 @@ public class WorklogExporter {
 
     private Collection<WorklogDTO> getWorklogs(WorklogExportParams params) {
         return worklogProvider.getWorklogs(params, financeProjectField.getIdAsLong());
-    }
-
-    private Collection<Worklog> getUpdatedWorklogs(WorklogExportParams exportParams) {
-        logger.debug("getUpdatedWorklogs started");
-        final Date startDate = exportParams.getStartDate() != null ? exportParams.getStartDate() : new Date();
-        final Date endDate = exportParams.getEndDate() != null ? exportParams.getEndDate() : new Date();
-        logger.debug("start date = " + startDate);
-        logger.debug("end date = " + endDate);
-        logger.debug("projects = " + exportParams.getProjects());
-        logger.debug("users = " + exportParams.getUsers());
-        WorklogStore worklogStore = getWorklogStore();
-        if (worklogStore == null) {
-            logger.error("worklog store is null!");
-            return Collections.emptyList();
-        }
-        List<Worklog> worklogList = worklogStore.getWorklogsUpdateSince(startDate.getTime(), Integer.MAX_VALUE);
-        logger.debug("since " + startDate + " untill " + endDate + " there was updated " + worklogList.size() + " worklogs");
-        Set<String> projectKeys = new HashSet<>();
-        if (exportParams.getProjects() != null && exportParams.getProjects().size() > 0) {
-            for (Project p : exportParams.getProjects()) {
-                projectKeys.add(p.getKey());
-            }
-        }
-        Set<String> userKeys = new HashSet<>();
-        if (exportParams.getUsers() != null && exportParams.getUsers().size() > 0) {
-            for (ApplicationUser user : exportParams.getUsers()) {
-                userKeys.add(user.getKey());
-            }
-        }
-        logger.debug("Filter worklogs by status, start date, end date, projects and users");
-        worklogList.removeIf(w -> {
-            if (w.getStartDate().before(startDate)) {
-                logger.debug("Deleting worklog (start date), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
-                return true;
-            }
-            if (w.getStartDate().after(endDate)) {
-                logger.debug("Deleting worklog (end date), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
-                return true;
-            }
-            if (projectKeys.size() > 0 && !projectKeys.contains(w.getIssue().getProjectObject().getKey())) {
-                logger.debug("Deleting worklog (project), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
-                return true;
-            }
-            if (userKeys.size() > 0 && !userKeys.contains(w.getAuthorKey())) {
-                logger.debug("Deleting worklog (user), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
-                return true;
-            }
-            if (!exportParams.isIncludeAllStatuses() && !dao.isWorklogExportable(w.getId())) {
-                logger.debug("Deleting worklog (status), params: worklog.startdate=" + w.getStartDate() + ", worklog.author.key=" + w.getAuthorKey() + ", worklog.date=" + w.getStartDate() + ", worklog.issue.key=" + w.getIssue().getKey() + ", worklog.comment=" + w.getComment());
-                return true;
-            }
-            return false;
-        });
-        //добавить фильтр по бюджетам
-        return worklogList;
-    }
-
-    private Collection<Issue> getWorklogIssues(Collection<Worklog> worklogs) {
-        Set<String> issueKeys = new HashSet<>();
-        for (Worklog w : worklogs) {
-            Issue issue = w.getIssue();
-            if (issue != null) {
-                issueKeys.add(issue.getKey());
-            }
-        }
-        Collection<Issue> result = new ArrayList<>();
-        IssueManager issueManager = ComponentAccessor.getIssueManager();
-        for (String key : issueKeys) {
-            result.add(issueManager.getIssueByCurrentKey(key));
-        }
-        return result;
     }
 
     private Collection<IssueDTO> getIssues(Collection<WorklogDTO> worklogs) {
