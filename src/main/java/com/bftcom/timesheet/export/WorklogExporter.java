@@ -174,9 +174,12 @@ public class WorklogExporter {
         file.createNewFile();
         StreamResult result = new StreamResult(file);
         transformer.transform(source, result);
-        for (WorklogData worklogData : updatedTimesheetsData) {
-            dao.setExported(worklogData, true);
+        if (!params.isIgnoreExportedFlag()) {
+            for (WorklogData worklogData : updatedTimesheetsData) {
+                dao.setExported(worklogData, true);
+            }
         }
+
         logger.debug("export finished successfully");
     }
 
