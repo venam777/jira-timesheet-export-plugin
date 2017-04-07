@@ -16,13 +16,17 @@
     }
 );*/
 
-oldfunc = window.onload;
+/*oldfunc = window.onload;
 window.onload = function(event) {
    customizeWorklogsStyle();
    window.setInterval(function() {
        customizeWorklogsStyle();
    }, 1000);
-};
+};*/
+document.addEventListener("DOMContentLoaded", function (event) {
+    console.log("document is ready");
+    setInterval(customizeWorklogsStyle, 1000);
+});
 
 
 /*function enableMutationObserver() {
@@ -59,12 +63,13 @@ function disableButtons(node) {
 }
 
 function colorizeWorklogs(node) {
-    var text = $(node).find('p').text();
-    if (text.search(/.*\| Статус: Утверждено/) != -1) {
-        $(node).find('.item-details').css('background-color', '#BADBAD');
-    } else if (text.search(/.*\| Статус: Не просмотрено/) != -1) {
-        $(node).find('.item-details').css('background-color', '#E0DDDD');
-    } else if (text.search(/.*\| Статус: Отклонено.*/) != -1) {
-        $(node).find('.item-details').css('background-color', '#F36D6D');
+    var worklogStatus = $(node).find('dd.worklog-comment').find('td.confluenceTd').text() || $(node).find('p').text();
+    var element = $(node).find('.item-details');
+    if (worklogStatus.search(/.*\| Статус: Утверждено/) != -1 || worklogStatus.endsWith("Статус: Утверждено")) {
+        $(element).css('background-color', '#BADBAD');
+    } else if (worklogStatus.search(/.*\| Статус: Не просмотрено/) != -1 || worklogStatus.endsWith("Статус: Не просмотрено")) {
+        $(element).css('background-color', '#E0DDDD');
+    } else if (worklogStatus.search(/.*\| Статус: Отклонено.*/) != -1 || worklogStatus.endsWith("Статус: Отклонено")) {
+        $(element).css('background-color', '#F36D6D');
     }
 }
