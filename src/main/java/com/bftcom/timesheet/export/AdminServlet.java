@@ -1,15 +1,12 @@
 package com.bftcom.timesheet.export;
 
-import com.atlassian.event.api.*;
 import com.atlassian.event.api.EventListener;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
 import com.atlassian.sal.api.auth.LoginUriProvider;
-import com.atlassian.sal.api.pluginsettings.PluginSettings;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
-import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.scheduler.SchedulerHistoryService;
 import com.atlassian.scheduler.SchedulerService;
 import com.atlassian.scheduler.config.JobId;
@@ -19,10 +16,8 @@ import com.atlassian.templaterenderer.TemplateRenderer;
 import com.bftcom.timesheet.export.events.AutoExportStartEvent;
 import com.bftcom.timesheet.export.events.AutoExportStopEvent;
 import com.bftcom.timesheet.export.events.ManualExportStartEvent;
-import com.bftcom.timesheet.export.utils.DateUtils;
 import com.bftcom.timesheet.export.utils.Parser;
 import com.bftcom.timesheet.export.utils.Settings;
-import org.apache.http.HttpRequest;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -30,7 +25,6 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletException;
@@ -41,27 +35,21 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
-@Component
 public class AdminServlet extends HttpServlet {
 
-    //    @ComponentImport
-    private UserManager userManager;
-    //    @ComponentImport
     private LoginUriProvider loginUriProvider;
     private String previousPage;
     private EventPublisher eventPublisher;
+    private TemplateRenderer templateRenderer;
     private static AdminServlet previousInstance = null;
-
     private static Logger logger = LoggerFactory.getLogger(AdminServlet.class);
 
-    //@Inject
     //todo доделать инжект зависимостей, https://bitbucket.org/atlassian/atlassian-spring-scanner
-    public AdminServlet(/*UserManager userManager, LoginUriProvider loginUriProvider,
-                        TemplateRenderer renderer, PluginSettingsFactory pluginSettingsFactory*/) {
+    public AdminServlet() {
         logger.debug("creating admin servlet");
-        this.userManager = ComponentAccessor.getOSGiComponentInstanceOfType(UserManager.class);
         this.loginUriProvider = ComponentAccessor.getOSGiComponentInstanceOfType(LoginUriProvider.class);
         this.eventPublisher = ComponentAccessor.getOSGiComponentInstanceOfType(EventPublisher.class);
+        this.templateRenderer = ComponentAccessor.getOSGiComponentInstanceOfType(TemplateRenderer.class);
         if (previousInstance != null) {
             eventPublisher.unregister(previousInstance);
         }
@@ -160,8 +148,8 @@ public class AdminServlet extends HttpServlet {
             case "Выполнить в ручном режиме":
                 logger.debug("export type = manual");
 
-                ManualExportStartEvent event = new ManualExportStartEvent(Parser.parseDate(req.getParameter("startDate"), DateUtils.getStartOfCurrentMonth()),
-                        Parser.parseDate(req.getParameter("endDate"), DateUtils.getEndOfCurrentMonth()));
+                ManualExportStartEvent event = new ManualExportStartEvent(Parser.parseDate(req.getParameter("startDate"), null/*DateUtils.getStartOfCurrentMonth()*/),
+                        Parser.parseDate(req.getParameter("endDate"), null/*DateUtils.getEndOfCurrentMonth()*/));
 
                 boolean includeAllProjects = getBooleanParam(req, "includeAllProjects");
                 event.setProjectNames(includeAllProjects ? new String[0] : req.getParameterMap().get("projects"));
@@ -169,6 +157,10 @@ public class AdminServlet extends HttpServlet {
                 boolean includeAllUsers = getBooleanParam(req, "includeAllUsers");
                 event.setUserNames(includeAllUsers ? new String[0] : req.getParameterMap().get("users"));
                 event.setIncludeAllStatuses(getBooleanParam(req, "includeAllStatuses"));
+                event.setWorklogStartDate(Parser.parseDate(req.getParameter("worklogStartDate"), null));
+                event.setWorklogEndDate(Parser.parseDate(req.getParameter("worklogEndDate"), null));
+                String issueKeys = req.getParameter("issueKeys");
+                event.setIssueKeys(issueKeys != null && !issueKeys.trim().equals("") ? issueKeys.split(",") : null);
                 eventPublisher.publish(event);
                 break;
         }

@@ -64,6 +64,18 @@ $webResourceManager.requireResourcesForContext("timesheet-export-admin-resources
             <td><input type="date" id="endDate" name="endDate" value=$endDate></td>
         </tr>
         <tr>
+            <td>Начальная дата списания worklog'а:</td>
+            <td><input type="date" id="worklogStartDate" name="worklogStartDate" value=$worklogStartDate></td>
+        </tr>
+        <tr>
+            <td>Конечная дата списания worklog'a:</td>
+            <td><input type="date" id="worklogEndDate" name="worklogEndDate" value=$worklogEndDate></td>
+        </tr>
+        <tr>
+            <td>Ключи записей:</td>
+            <td><input type="text" id="issueKeys" name="issueKeys"></td>
+        </tr>
+        <tr>
             <td>Выгружать все трудозатраты, без учета статусов:</td>
             <td><input type="checkbox" name="includeAllStatuses" #if($includeAllStatuses) checked #end style="width: 15px"></td>
         </tr>

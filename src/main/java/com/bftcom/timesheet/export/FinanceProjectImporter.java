@@ -65,7 +65,7 @@ public class FinanceProjectImporter {
             if (doc.hasChildNodes()) {
                 Element el = (Element) root.getElementsByTagName("FINPROJECT").item(0);
                 if (el == null) {
-                    logger.error("tag FINPROJECT must be into root tag " + root.getTagName());
+                    //logger.error("tag FINPROJECT must be into root tag " + root.getTagName());
                     if (Settings.deleteFilesAfterImport) {
                         fXmlFile.delete();
                     }

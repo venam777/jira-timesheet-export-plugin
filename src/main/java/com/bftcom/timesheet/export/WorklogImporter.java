@@ -58,7 +58,7 @@ public class WorklogImporter {
             if (doc.hasChildNodes()) {
                 Element el = (Element) root.getElementsByTagName("TIMESHEET").item(0);
                 if (el == null) {
-                    logger.error("tag TIMESHEET must be into root tag " + root.getTagName());
+                    //logger.error("tag TIMESHEET must be into root tag " + root.getTagName());
                     if (Settings.deleteFilesAfterImport) {
                         fXmlFile.delete();
                     }

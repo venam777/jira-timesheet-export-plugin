@@ -30,19 +30,6 @@
         <ao.version>1.1.5</ao.version>
     </properties>
     <pluginRepositories>
-        <!--<pluginRepository>-->
-        <!--<id>atlassian-public</id>-->
-        <!--<url>https://maven.atlassian.com/content/repositories/atlassian-public/</url>-->
-        <!--<snapshots>-->
-        <!--<enabled>true</enabled>-->
-        <!--<updatePolicy>never</updatePolicy>-->
-        <!--<checksumPolicy>warn</checksumPolicy>-->
-        <!--</snapshots>-->
-        <!--<releases>-->
-        <!--<enabled>true</enabled>-->
-        <!--<checksumPolicy>warn</checksumPolicy>-->
-        <!--</releases>-->
-        <!--</pluginRepository>-->
         <pluginRepository>
             <id>repo.gradle</id>
             <url>http://repo.gradle.org/gradle/repo/</url>
@@ -57,62 +44,6 @@
             </releases>
         </pluginRepository>
     </pluginRepositories>
-    <repositories>
-        <!--<repository>-->
-        <!--<id>atlassian-public2</id>-->
-        <!--<url>https://maven.atlassian.com/repository/public</url>-->
-        <!--<snapshots>-->
-        <!--<enabled>true</enabled>-->
-        <!--<updatePolicy>never</updatePolicy>-->
-        <!--<checksumPolicy>warn</checksumPolicy>-->
-        <!--</snapshots>-->
-        <!--<releases>-->
-        <!--<enabled>true</enabled>-->
-        <!--<checksumPolicy>warn</checksumPolicy>-->
-        <!--</releases>-->
-        <!--</repository>-->
-        <repository>
-            <id>atlassian-public</id>
-            <url>https://maven.atlassian.com/content/repositories/atlassian-public/</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-                <checksumPolicy>warn</checksumPolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>atlassian-public-group</id>
-            <url>https://maven.atlassian.com/content/groups/public/</url>
-        </repository>
-        <repository>
-            <id>atlassian-3rdparty</id>
-            <url>https://maven.atlassian.com/3rdparty/</url>
-        </repository>
-        <!--<repository>-->
-        <!--<id>gliffy-public</id>-->
-        <!--<url>http://maven.gliffy.com/content/groups/public/</url>-->
-        <!--</repository>-->
-        <!--<repository>-->
-        <!--<id>maven-us.nuxeo-public</id>-->
-        <!--<url>https://maven-us.nuxeo.org/nexus/content/repositories/public/</url>-->
-        <!--</repository>-->
-        <!--<repository>-->
-        <!--<id>gradle.artifactoryonline-libs</id>-->
-        <!--<url>http://gradle.artifactoryonline.com/gradle/libs/</url>-->
-        <!--</repository>-->
-        <!--<repository>-->
-        <!--<id>repo.gradle</id>-->
-        <!--<url>http://repo.gradle.org/gradle/repo/</url>-->
-        <!--</repository>-->
-        <!--<repository>-->
-        <!--<id>repo.4sh.fr</id>-->
-        <!--<url>http://repo.4sh.fr/artifactory/pubs/</url>-->
-        <!--</repository>-->
-    </repositories>
     <dependencies>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
@@ -158,22 +89,10 @@
             <version>1.6.4-atlassian-7</version>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>net.java.dev.activeobjects</groupId>-->
-        <!--<artifactId>activeobjects-core</artifactId>-->
-        <!--<version></version>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-plugin</artifactId>
             <version>0.23.7</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.atlassian.templaterenderer</groupId>
-            <artifactId>atlassian-template-renderer-api</artifactId>
-            <version>1.1.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -188,56 +107,6 @@
             <version>1.7.0</version>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.joda</groupId>-->
-        <!--<artifactId>joda-convert</artifactId>-->
-        <!--<version>1.8.1</version>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.atlassian.activeobjects</groupId>-->
-        <!--<artifactId>activeobjects-spi</artifactId>-->
-        <!--<version>${ao.version}</version>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.atlassian.sal</groupId>-->
-        <!--<artifactId>sal-api</artifactId>-->
-        <!--<version>3.0.3</version>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.atlassian.sal</groupId>-->
-        <!--<artifactId>sal-spi</artifactId>-->
-        <!--<version>3.0.3</version>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.atlassian.jira</groupId>-->
-        <!--<artifactId>atlassian-jira</artifactId>-->
-        <!--<version></version>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>jta</groupId>-->
-        <!--<artifactId>jta</artifactId>-->
-        <!--<version>1.0.1</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>jndi</groupId>-->
-        <!--<artifactId>jndi</artifactId>-->
-        <!--<version>1.2.1</version>-->
-        <!--</dependency>-->
-        <!-- Uncomment to use TestKit in your project. Details at https://bitbucket.org/atlassian/jira-testkit -->
-        <!-- You can read more about TestKit at https://developer.atlassian.com/display/JIRADEV/Plugin+Tutorial+-+Smarter+integration+testing+with+TestKit -->
-        <!--
-		<dependency>
-			<groupId>com.atlassian.jira.tests</groupId>
-			<artifactId>jira-testkit-client</artifactId>
-			<version>${testkit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		-->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
@@ -279,6 +148,12 @@
             <artifactId>mockito-all</artifactId>
             <version>1.8.5</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.templaterenderer</groupId>
+            <artifactId>atlassian-template-renderer-api</artifactId>
+            <version>2.0.4</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>

@@ -3,21 +3,16 @@ package com.bftcom.timesheet.export;
 import com.atlassian.jira.bc.issue.worklog.DeletedWorklog;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.customfields.option.Option;
 import com.atlassian.jira.issue.fields.CustomField;
-import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.issue.worklog.WorklogManager;
 import com.atlassian.jira.issue.worklog.WorklogStore;
-import com.atlassian.jira.project.Project;
-import com.atlassian.jira.user.ApplicationUser;
 import com.bftcom.timesheet.export.dto.IssueDTO;
 import com.bftcom.timesheet.export.dto.WorklogDTO;
 import com.bftcom.timesheet.export.entity.WorklogData;
 import com.bftcom.timesheet.export.provider.WorklogProvider;
 import com.bftcom.timesheet.export.utils.Constants;
 import com.bftcom.timesheet.export.utils.Parser;
-import com.bftcom.timesheet.export.utils.SQLUtils;
 import com.bftcom.timesheet.export.utils.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +23,10 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
@@ -51,7 +49,7 @@ public class WorklogExporter {
         this.dao = dao;
         manager = ComponentAccessor.getWorklogManager();
         financeProjectField = ComponentAccessor.getCustomFieldManager().getCustomFieldObjectByName(Constants.financeProjectFieldName);
-        worklogProvider = new WorklogProvider(dao);
+        worklogProvider = new WorklogProvider();
     }
 
     public void exportWorklog(WorklogExportParams params) throws TransformerException, ParserConfigurationException, IOException {

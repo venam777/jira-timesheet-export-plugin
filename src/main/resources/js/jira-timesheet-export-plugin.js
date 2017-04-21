@@ -1,24 +1,27 @@
 function setExportMode(isAutoMode) {
-    document.getElementById("startDate").disabled = isAutoMode;
-    document.getElementById("endDate").disabled = isAutoMode;
-    document.getElementById("startAuto").disabled = !isAutoMode || document.getElementById("runningMode").getAttribute('auto') == 'true';
-    document.getElementById("stopAuto").disabled = !isAutoMode || document.getElementById("runningMode").getAttribute('auto') != 'true';
-    document.getElementById("executeManualy").disabled = isAutoMode;
-    document.getElementById("exportPeriod").disabled = !isAutoMode;
-    document.getElementById("importPeriod").disabled = !isAutoMode;
-    document.getElementById("startDate").required = !isAutoMode;
-    document.getElementById("endDate").required = !isAutoMode;
+    $("#startDate").attr('disabled', isAutoMode);
+    $("#endDate").attr('disabled', isAutoMode);
+    $("#startAuto").attr('disabled', !isAutoMode || $("#runningMode").attr('auto') == 'true');
+    $("#stopAuto").attr('disabled',  !isAutoMode || $("#runningMode").attr('auto') != 'true');
+    $("#executeManualy").attr('disabled', isAutoMode);
+    $("#exportPeriod").attr('disabled', !isAutoMode);
+    $("#importPeriod").attr('disabled', !isAutoMode);
+    $('#worklogStartDate').attr('disabled', isAutoMode);
+    $('#worklogEndDate').attr('disabled', isAutoMode);
+    $('#issueKeys').attr('disabled', isAutoMode);
+    //$("#startDate").required = !isAutoMode;
+    //$("#endDate").required = !isAutoMode;
 }
 window.onload = function () {
     setExportMode(true)
 };
 
 function setIncludeAllProjects(includeAllProjects) {
-   document.getElementById("projects").disabled = includeAllProjects;
+   $("#projects").attr('disabled', includeAllProjects);
 }
 
 function setIncludeAllUsers(includeAllUsers) {
-    document.getElementById("users").disabled = includeAllUsers;
+    $("#users").attr('disabled', includeAllUsers);
 }
 
 function deleteBudget() {
